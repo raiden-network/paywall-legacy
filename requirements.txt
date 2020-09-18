@@ -15,3 +15,7 @@
 # numpy==1.13.3
 # scipy==1.0
 #
+flask==1.1.2
+flask-cors==3.0.8
+aiohttp==3.6.2
+raiden==1.1.1

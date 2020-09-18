@@ -60,10 +60,10 @@ def parse_args(args):
         action="version",
         version="raiden-paywall {ver}".format(ver=__version__))
     parser.add_argument(
-        dest="n",
-        help="n-th Fibonacci number",
-        type=int,
-        metavar="INT")
+        dest="raiden",
+        help="Address of the Raiden API",
+        type=str,
+        metavar="STR")
     parser.add_argument(
         "-v",
         "--verbose",
