@@ -1,19 +1,20 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <RaidenPaywall msg="Welcome to the Raiden Paywall app"/>
   </div>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import RaidenPaywall from './components/Paywall.vue';
 
-export default {
-  name: 'App',
+@Component({
   components: {
-    HelloWorld
-  }
-}
+    RaidenPaywall,
+  },
+})
+export default class App extends Vue {}
 </script>
 
 <style>
