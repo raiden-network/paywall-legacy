@@ -12,10 +12,11 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class PaywalledContent extends Vue {
-  @Prop() private msg!: string;
+	@Prop() private msg!: string;
 
 	async mounted(){
-		this.$http.get('http://localhost:5000');
+		const original_promise = this.$http.get('http://localhost:5000');
+		await original_promise;
 	}
 }
 </script>
