@@ -73,6 +73,7 @@ class PaymentService:
         return datetime.datetime.now() + self.timeout
 
     def payment_exists(self, identifier, amount):
+        # TODO remove
         response = requests.get(f"{self._address}/payments/{self.token_address}")
         # TODO error handling etc
         for payment in response.json():
@@ -121,7 +122,10 @@ def paywalled(raiden, amount):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # If a payment Id is present it is assumed that the requester
+            # knows he is requesting 
             payment_id = request.headers.get('X-Raiden-Payment-Id')
+            print(request.headers)
             if payment_id:
                 payment_information = raiden.payments_awaited.get(payment_id)
                 if payment_information:
@@ -131,9 +135,14 @@ def paywalled(raiden, amount):
                         # If redeemable return the resource function that is decorated
                         return f(*args, **kwargs)
                     else:
+                        # TODO here we could implement long polling or block for 
+                        # some seconds until the transfer arrives
                         return payment_information.to_json(), 401
             payment_information = raiden.schedule_payment(amount)
-            return payment_information.to_json(), 402
+            if payment_id:
+                return payment_information.to_json(), 401
+            else:
+                return payment_information.to_json(), 402
         return decorated_function
     return decorator
 
