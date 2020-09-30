@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import g, request, redirect, url_for, make_response
+from flask import g, request, redirect, url_for, make_response, current_app
 from flask_cors import CORS
 from dataclasses import dataclass 
 import json 
@@ -12,8 +12,11 @@ import datetime
 
 from flask.logging import default_handler
 
-log = logging.getLogger()
-log.addHandler(default_handler)
+root = logging.getLogger()
+root.addHandler(default_handler)
+
+log = logging.getLogger('werkzeug')
+log.info('test logging')
 
 @dataclass
 class PaymentInformation:
@@ -26,8 +29,8 @@ class PaymentInformation:
 
     def to_json(self):
         dic = {
-            'amount': self.amount,
-            'identifier': self.identifier,
+            'amount': str(self.amount),
+            'identifier': str(self.identifier),
             'token': str(self.token),
             'receiver': str(self.receiver),
             'timeout': str(self.timeout),
@@ -73,40 +76,43 @@ class PaymentService:
         return datetime.datetime.now() + self.timeout
 
     def payment_exists(self, identifier, amount):
-        # TODO remove
         response = requests.get(f"{self._address}/payments/{self.token_address}")
         # TODO error handling etc
         for payment in response.json():
             # we don't care if the user paid too much, it's their probleml
             if payment['event'] == "EventPaymentReceivedSuccess":
                 if int(payment["identifier"]) == int(identifier) and int(payment["amount"]) >= int(amount):
+                    log.info(f"Found payment in raiden: {identifier}")
                     return True
+        log.info(f"Didn't find payment in raiden: {identifier}")
         return False
 
     def schedule_payment(self, amount):
         # FIXME 2**64 is within bruteforce reach! Fix raiden ids!
         payment_id = random.randint(0, 2**64 - 1)
-        if payment_id in set(self._payments_awaited.keys()) | self._redeemed_payments:
-            self.schedule_payment(amount)
+        if payment_id in set(self._payments_awaited.keys()):
+            return self.schedule_payment(amount)
         # TODO convert to absolute amount with the decimals
-        self._payments_awaited[payment_id] = amount
-        return PaymentInformation(
+        log.info(f"Payment scheduled: id={payment_id}, amount={amount}")
+        payment_information = PaymentInformation(
             amount=amount,
             identifier=int(payment_id),
             token=self.token_address,
             receiver=self.raiden_address,
             timeout=self._calculate_timeout()
         )
+        self._payments_awaited[payment_id] = payment_information
+        return payment_information
 
     def redeem_payment(self, payment_id):
         # if it was scheduled, it automatically is paid for
-        amount = self._payments_awaited.get(payment_id)
-        if not amount:
+        assert type(payment_id) is int
+        payment_information = self.payments_awaited.get(payment_id)
+        if not payment_information:
             return False
-        if self.payment_exists(payment_id, amount):
+        if self.payment_exists(payment_id, payment_information.amount):
             if payment_id in self._redeemed_payments:
                 return False
-
             del self._payments_awaited[payment_id]
             self._redeemed_payments.add(payment_id)
             return True
@@ -125,23 +131,27 @@ def paywalled(raiden, amount):
             # If a payment Id is present it is assumed that the requester
             # knows he is requesting 
             payment_id = request.headers.get('X-Raiden-Payment-Id')
-            print(request.headers)
             if payment_id:
+                log.info(f"Found id in header: {payment_id}")
+                payment_id = int(payment_id)
                 payment_information = raiden.payments_awaited.get(payment_id)
                 if payment_information:
+                    log.info(f"Payment awaited: {payment_information}")
                     # this means the requester knows this is an endpoint,
                     # and tries to redeem a token!
-                    if raiden.redeem_payment(int(payment_id)) is True:
+                    if raiden.redeem_payment(payment_id) is True:
                         # If redeemable return the resource function that is decorated
                         return f(*args, **kwargs)
                     else:
                         # TODO here we could implement long polling or block for 
                         # some seconds until the transfer arrives
+                        log.info(f"Payment not redeemable yet: {payment_information}")
                         return payment_information.to_json(), 401
             payment_information = raiden.schedule_payment(amount)
             if payment_id:
                 return payment_information.to_json(), 401
             else:
+                log.info(payment_information.to_json())
                 return payment_information.to_json(), 402
         return decorated_function
     return decorator
@@ -151,7 +161,7 @@ from flask import Flask
 app = Flask(__name__)
 CORS(app)
 
-raiden_api = 'http://localhost:5001'
+raiden_api = 'http://localhost:5002'
 token_address = "0xC563388e2e2fdD422166eD5E76971D11eD37A466"
 amount_to_pay = 0.001
 raiden = PaymentService(raiden_api, token_address)
