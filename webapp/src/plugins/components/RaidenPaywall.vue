@@ -1,5 +1,5 @@
 <template>
-	<div v-if="!success">
+	<div v-if="showPopup">
 	<BlockUI>
 		<div v-if="requested">
 		<font-awesome-icon icon="spinner" />
@@ -21,7 +21,7 @@
 
 <script lang="ts">
 import { Component, Vue} from 'vue-property-decorator';
-import {PaymentState} from '../plugins/raiden-paywall'
+import {PaymentState} from '../raiden-paywall'
 
 function payment_callback(this: Vue, payment: RaidenPaymentExternal): void{
 	// here the plugin vue part will go!
@@ -48,7 +48,7 @@ function payment_callback(this: Vue, payment: RaidenPaymentExternal): void{
 }
 
 @Component
-export default class RaidenPopup extends Vue {
+export default class RaidenPaywall extends Vue {
 	created (){
 		this.$paywall.register_callback(payment_callback.bind(this));
 	}
@@ -61,6 +61,13 @@ export default class RaidenPopup extends Vue {
 	}
 	get success() {
 		return this.raiden_payment?.state === PaymentState.SUCCESS;
+	}
+
+	get showPopup(){
+		if (!this.raiden_payment){
+			return false;
+		}
+		return (!this.success)
 	}
   data () {
     return {

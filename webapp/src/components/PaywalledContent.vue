@@ -2,7 +2,7 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <p>
-			Hello Raiden!
+			{{secretPaywallMsg}}
     </p>
   </div>
 </template>
@@ -15,8 +15,14 @@ export default class PaywalledContent extends Vue {
 	@Prop() private msg!: string;
 
 	async mounted(){
-		const original_promise = this.$http.get('http://localhost:5000');
-		await original_promise;
+		const original_promise = await this.$http.get('http://localhost:5000');
+		this.secretPaywallMsg = original_promise.data
+	}
+
+  data () {
+    return {
+      secretPaywallMsg: '',
+    }
 	}
 }
 </script>

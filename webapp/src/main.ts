@@ -1,19 +1,18 @@
 import Vue from 'vue'
 import App from './App.vue'
-import BlockUI from 'vue-blockui'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faSpinner, faHourglassEnd } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-import {RaidenPaywallPlugin} from './plugins/raiden-paywall'
+import {RaidenPaywallPlugin, RaidenPaywallOptions} from './plugins/raiden-paywall'
 
-
-library.add(faSpinner)
 Vue.config.productionTip = false
 
-Vue.use(RaidenPaywallPlugin)
-Vue.use(BlockUI)
-Vue.component('font-awesome-icon', FontAwesomeIcon)
+const raiden_options = {
+	raidenUrl: new URL('http://localhost:8081'),
+	pollInitialWaitTime: 10_000,
+	pollInterval: 3_000,
+	pollMaxWaitTime: 120_000,
+} as RaidenPaywallOptions;
+
+Vue.use(RaidenPaywallPlugin, raiden_options)
 
 new Vue({
   render: h => h(App),

@@ -4,7 +4,12 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } f
 //import Store from 'vuex';
 //import axiosRetry from "axios-retry";
 import {Address, BigNumberC} from "raiden-ts";
+import RaidenPaywall from "./components/RaidenPaywall.vue"
+import BlockUI from 'vue-blockui'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSpinner, faHourglassEnd } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 
 //function is_raiden_rejected(error: AxiosError): boolean{
@@ -44,9 +49,16 @@ export class RaidenPaywallHandler{
 	public axios: AxiosInstance;
 	private raiden_dapp_url: URL;
 	private _callbacks: {(payment: RaidenPaymentExternal): void;}[];
+	private _pollInitialWaitTime: number;
+	private _pollMaxWaitTime: number;
+	private _pollInterval: number;
 	
-	public constructor (raiden_dapp_url: string, config?: AxiosRequestConfig) {
-		this.raiden_dapp_url = new URL(raiden_dapp_url);
+	public constructor (options: RaidenPaywallOptions, config?: AxiosRequestConfig) {
+		this.raiden_dapp_url = options.raidenUrl;
+		this._pollInterval = options.pollInterval || 2_000;
+		this._pollMaxWaitTime =  options.pollMaxWaitTime || 120_000;
+		this._pollInitialWaitTime = options.pollInitialWaitTime || 0;
+
 		this.axios = axios.create(config);
 		this._callbacks = [];
 		// we provide an interceptor that handles raiden payment requests!
@@ -57,13 +69,11 @@ export class RaidenPaywallHandler{
 	private add_state(payment: RaidenPayment, state: PaymentState): RaidenPaymentExternal{
 		let new_payment = payment as RaidenPaymentExternal;
 		new_payment.state = state;
-		new_payment.url = new URL(`/#/transfer/${payment.token}/${payment.receiver}/${payment.identifier}?amount=${payment.amount}`, this.raiden_dapp_url)
+		new_payment.url = new URL(`/#/transfer/${payment.token}/${payment.receiver}?identifier=${payment.identifier}&amount=${payment.amount}`, this.raiden_dapp_url)
 		return new_payment
 	}
 
 	private callback(payment: RaidenPaymentExternal){
-		console.log(this._callbacks);
-		console.log(payment);
 		this._callbacks.forEach(callback => {
 			callback(payment)
 		});
@@ -73,24 +83,33 @@ export class RaidenPaywallHandler{
 		this._callbacks.push(callback);
 
 	}
+
+
+	private poll_timeout_reached(start_poll_time: Date, payment_timeout: Date): boolean {
+		const time_now = new Date().getTime().valueOf();
+		console.log(start_poll_time.getTime(), payment_timeout.getTime());
+		return (
+			time_now > payment_timeout.getTime().valueOf()
+			||  time_now - start_poll_time.getTime().valueOf() > this._pollMaxWaitTime 
+		)
+	}
+
 	private async _handle_response_error(error: AxiosError): Promise<any> {
 		if (error.response) {
 			if (is_raiden_payment_required(error)) {
-				console.log(JSON.stringify(error));
 				const payment = error.response.data
 				this.callback(
 					this.add_state(payment, PaymentState.REQUESTED)
 				);
 				error.config.headers['X-Raiden-Payment-Id'] = payment.identifier;
-				let num_requests = 0;
 				let last_error = undefined;
+				const started_time = new Date();
 				// TODO introduce a sync barrier here, that blocks until 
 				// a currently 'processed' payment is finished
+				let num_requests = 0;
 				do {
 					try{
-						num_requests++;
 						let response = await this.axios(error.config);
-						console.log(response);
 						this.callback(
 							this.add_state(payment, PaymentState.SUCCESS)
 						);
@@ -98,8 +117,12 @@ export class RaidenPaywallHandler{
 					} catch (error){
 						last_error = error;
 						if (error.response?.status === 401){
-							// TODO make poll timings as parameters
-							await delay(2000);
+							num_requests++;
+							if (num_requests == 1) {
+								await delay(this._pollInitialWaitTime);
+							} else{
+								await delay(this._pollInterval);
+							}
 							continue;
 
 						}else{
@@ -109,8 +132,7 @@ export class RaidenPaywallHandler{
 							return Promise.reject(error)
 						}
 					}
-				// TODO make max requests parameter
-				} while (num_requests <= 60);
+				} while (!this.poll_timeout_reached(started_time, new Date(payment.timeout)));
 				this.callback(
 					this.add_state(payment, PaymentState.TIMEOUT)
 				);
@@ -122,11 +144,28 @@ export class RaidenPaywallHandler{
 	}
 }
 
+	// Timedeltas:
+      //var eventStartTime = new Date(event.startTime);
+      //var eventEndTime = new Date(event.endTime);
+      //var duration = eventEndTime.valueOf() - eventStartTime.valueOf();
+
+export interface RaidenPaywallOptions {
+	raidenUrl: URL;
+	pollInterval?: number;
+	pollMaxWaitTime?: number | undefined;
+	pollInitialWaitTime?: number | undefined; 
+}
 
 export function RaidenPaywallPlugin(Vue: typeof _Vue, _options?: any): void {
-	// TODO make base url an plugin option
-	Vue.prototype.$paywall = new RaidenPaywallHandler('http://localhost:8081');
+	library.add(faSpinner, faHourglassEnd)
+	Vue.use(BlockUI)
+	Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+	const paywall_options = _options as RaidenPaywallOptions;
+
+	Vue.prototype.$paywall = new RaidenPaywallHandler(paywall_options);
 	Vue.prototype.$http = Vue.prototype.$paywall.axios;
+	Vue.component('RaidenPaywall', RaidenPaywall)
 }
 
 declare module 'vue/types/vue' {
