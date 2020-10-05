@@ -1,0 +1,10 @@
+eth-rpc-endpoint  = "http://parity.goerli.ethnodes.brainbot.com:8545"
+network-id = 5
+environment-type = "development"
+accept-disclaimer = true
+matrix-server = "https://transport.demo001.env.raiden.network"
+pathfinding-service-address = "https://pfs.demo001.env.raiden.network"
+api-address = "127.0.0.1:5002"
+
+[log-config]
+"" = "debug"
