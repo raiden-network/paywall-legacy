@@ -1,3 +1,6 @@
+start-server: export FLASK_APP=src/raiden_paywall/flask.py
 start-server:
-	 FLASK_APP=src/raiden_paywall/flask.py ; flask run
+	flask run
 
+install-dev:
+	pip install -r requirements.txt; python setup.py develop

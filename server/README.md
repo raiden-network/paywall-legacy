@@ -4,7 +4,13 @@
 1) Install Raiden
 Raiden version `1.1.1`
 
-2) Start the Raiden node first
+2) Install the server:
+
+```shell
+make install-dev
+```
+
+3) Start the Raiden node first
 
 ```shell
 raiden \
@@ -14,7 +20,7 @@ raiden \
 --config-file config-dev.toml
 ```
 
-3) Then start the WSGI server:
+4) Then start the WSGI server:
 
 ```shell
 make start-server

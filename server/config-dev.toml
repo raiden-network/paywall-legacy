@@ -5,6 +5,3 @@ accept-disclaimer = true
 matrix-server = "https://transport.demo001.env.raiden.network"
 pathfinding-service-address = "https://pfs.demo001.env.raiden.network"
 api-address = "127.0.0.1:5002"
-
-[log-config]
-"" = "debug"
