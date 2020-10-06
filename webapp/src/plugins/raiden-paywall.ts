@@ -69,7 +69,7 @@ export class RaidenPaywallHandler{
 	private add_state(payment: RaidenPayment, state: PaymentState): RaidenPaymentExternal{
 		let new_payment = payment as RaidenPaymentExternal;
 		new_payment.state = state;
-		new_payment.url = new URL(`/#/transfer/${payment.token}/${payment.receiver}?identifier=${payment.identifier}&amount=${payment.amount}`, this.raiden_dapp_url)
+		new_payment.url = new URL(`#/transfer/${payment.token}/${payment.receiver}?identifier=${payment.identifier}&amount=${payment.amount}`, this.raiden_dapp_url)
 		return new_payment
 	}
 

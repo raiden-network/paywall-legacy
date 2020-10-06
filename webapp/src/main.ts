@@ -6,7 +6,7 @@ import {RaidenPaywallPlugin, RaidenPaywallOptions} from './plugins/raiden-paywal
 Vue.config.productionTip = false
 
 const raiden_options = {
-	raidenUrl: new URL('http://lightclient.raiden.network/staging'),
+	raidenUrl: new URL('http://lightclient.raiden.network/staging/'),
 	pollInitialWaitTime: 10_000,
 	pollInterval: 3_000,
 	pollMaxWaitTime: 120_000,
