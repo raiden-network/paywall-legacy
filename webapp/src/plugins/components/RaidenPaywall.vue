@@ -23,34 +23,10 @@
 import { Component, Vue} from 'vue-property-decorator';
 import {PaymentState} from '../raiden-paywall'
 
-function payment_callback(this: Vue, payment: RaidenPaymentExternal): void{
-	// here the plugin vue part will go!
-	switch (payment.state) {
-		case PaymentState.REQUESTED:
-			this.raiden_payment = payment;
-			break;
-		case PaymentState.SUCCESS:
-			if (this.raiden_payment?.identifier === payment.identifier){
-				this.raiden_payment = payment;
-				console.log(`Payment successful: ${payment}`)
-			}else{
-				console.warn("Payment successful, but other payment was waited on")
-			}
-			break;
-		case PaymentState.FAILED:
-			break;
-		case PaymentState.TIMEOUT:
-			this.raiden_payment = payment;
-			break;
-		default:
-			break;
-	}
-}
-
 @Component
 export default class RaidenPaywall extends Vue {
-	created (){
-		this.$paywall.register_callback(payment_callback.bind(this));
+	created () {
+		this.$paywall.register_callback((payment) => this.handlePayment(payment));
 	}
 
 	get requested() {
@@ -74,6 +50,30 @@ export default class RaidenPaywall extends Vue {
       msg: 'RaidenPayment required',
 			raiden_payment: undefined,
     }
+	}
+
+	handlePayment(payment: RaidenPaymentExternal): void {
+		// here the plugin vue part will go!
+		switch (payment.state) {
+			case PaymentState.REQUESTED:
+				this.raiden_payment = payment;
+				break;
+			case PaymentState.SUCCESS:
+				if (this.raiden_payment?.identifier === payment.identifier) {
+					this.raiden_payment = payment;
+					console.log(`Payment successful: ${payment}`)
+				} else {
+					console.warn("Payment successful, but other payment was waited on")
+				}
+				break;
+			case PaymentState.FAILED:
+				break;
+			case PaymentState.TIMEOUT:
+				this.raiden_payment = payment;
+				break;
+			default:
+				break;
+		}
 	}
 }
 </script>
