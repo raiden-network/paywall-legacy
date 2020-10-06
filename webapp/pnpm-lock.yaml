@@ -23,7 +23,9 @@ devDependencies:
   '@vue/eslint-config-typescript': 5.1.0_f8b8c2e71389849a7113a6c8d1602ca4
   babel-eslint: 10.1.0_eslint@6.8.0
   eslint: 6.8.0
+  eslint-config-prettier: 6.12.0_eslint@6.8.0
   eslint-plugin-vue: 6.2.2_eslint@6.8.0
+  prettier: 2.1.2
   typescript: 3.9.7
   vue-template-compiler: 2.6.12
 lockfileVersion: 5.1
@@ -3875,6 +3877,16 @@ packages:
       node: '>=0.8.0'
     resolution:
       integrity: sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
+  /eslint-config-prettier/6.12.0_eslint@6.8.0:
+    dependencies:
+      eslint: 6.8.0
+      get-stdin: 6.0.0
+    dev: true
+    hasBin: true
+    peerDependencies:
+      eslint: '>=3.14.1'
+    resolution:
+      integrity: sha512-9jWPlFlgNwRUYVoujvWTQ1aMO8o6648r+K7qU7K5Jmkbyqav1fuEZC0COYpGBxyiAJb65Ra9hrmFx19xRGwXWw==
   /eslint-loader/2.2.1_eslint@6.8.0+webpack@4.44.1:
     dependencies:
       eslint: 6.8.0
@@ -4633,6 +4645,12 @@ packages:
       node: 6.* || 8.* || >= 10.*
     resolution:
       integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
+  /get-stdin/6.0.0:
+    dev: true
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha512-jp4tHawyV7+fkkSKyvjuLZswblUtz+SQKzSWnBbii16BuZksJlU1wuBYXY75r+duh/llF1ur6oNwi+2ZzjKZ7g==
   /get-stream/3.0.0:
     dev: true
     engines:
@@ -7454,6 +7472,13 @@ packages:
     optional: true
     resolution:
       integrity: sha512-s7PoyDv/II1ObgQunCbB9PdLmUcBZcnWOcxDh7O0N/UwDEsHyqkW+Qh28jW+mVuCdx7gLB0BotYI1Y6uI9iyew==
+  /prettier/2.1.2:
+    dev: true
+    engines:
+      node: '>=10.13.0'
+    hasBin: true
+    resolution:
+      integrity: sha512-16c7K+x4qVlJg9rEbXl7HEGmQyZlG4R9AgP+oHKRMsMsuk8s+ATStlf1NpDqyBI1HpVyfjLOeMhH2LvuNvV5Vg==
   /pretty-error/2.1.1:
     dependencies:
       renderkid: 2.0.3
@@ -9789,8 +9814,10 @@ specifiers:
   babel-eslint: ^10.1.0
   core-js: ^3.6.5
   eslint: ^6.7.2
+  eslint-config-prettier: ^6.12.0
   eslint-plugin-vue: ^6.2.2
   node-pre-gyp: ^0.15.0
+  prettier: 2.1.2
   raiden-ts: ^0.11.1
   typescript: ~3.9.3
   vue: ^2.6.11

@@ -1,20 +1,18 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <PaywalledContent msg="Welcome to the Raiden Paywall app"/>
-		<RaidenPaywall msg="Hallo test"/>
+    <img alt="Vue logo" src="./assets/logo.png" />
+    <PaywalledContent msg="Welcome to the Raiden Paywall app" />
+    <RaidenPaywall msg="Hallo test" />
   </div>
 </template>
 
 <script lang="ts">
-
-
 import { Component, Vue } from 'vue-property-decorator';
 import PaywalledContent from './components/PaywalledContent.vue';
 
 @Component({
   components: {
-		PaywalledContent,
+    PaywalledContent,
   },
 })
 export default class App extends Vue {}
