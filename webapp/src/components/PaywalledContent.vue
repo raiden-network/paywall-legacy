@@ -14,15 +14,11 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class PaywalledContent extends Vue {
   @Prop() private msg!: string;
 
+  secretPaywallMsg = '';
+
   async mounted() {
     const original_promise = await this.$http.get('http://localhost:5000');
     this.secretPaywallMsg = original_promise.data;
-  }
-
-  data() {
-    return {
-      secretPaywallMsg: '',
-    };
   }
 }
 </script>

@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { PaymentState } from '../raiden-paywall';
+import { PaymentState, RaidenPaymentExternal } from '../raiden-paywall';
 
 @Component
 export default class RaidenPaywall extends Vue {
@@ -61,7 +61,7 @@ export default class RaidenPaywall extends Vue {
     };
   }
 
-  handlePayment(payment: RaidenPaymentExternal): void {
+  private handlePayment(payment: RaidenPaymentExternal): void {
     // here the plugin vue part will go!
     switch (payment.state) {
       case PaymentState.REQUESTED:
