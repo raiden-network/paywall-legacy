@@ -6,6 +6,7 @@ dependencies:
   axios-retry: 3.1.8
   core-js: 3.6.5
   node-pre-gyp: 0.15.0
+  normalize.css: 8.0.1
   raiden-ts: 0.11.1
   vue: 2.6.12
   vue-blockui: 1.1.7
@@ -6526,6 +6527,10 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-U+JJi7duF1o+u2pynbp2zXDW2/PADgC30f0GsHZtRh+HOcXHnw137TrNlyxxRvWW5fjKd3bcLHPxofWuCjaeZg==
+  /normalize.css/8.0.1:
+    dev: false
+    resolution:
+      integrity: sha512-qizSNPO93t1YUuUhP22btGOo3chcvDFqFaj2TRybP0DMxkHOCTYwp3n34fel4a31ORXy4m1Xq0Gyqpb5m33qIg==
   /npm-bundled/1.1.1:
     dependencies:
       npm-normalize-package-bin: 1.0.1
@@ -9871,6 +9876,7 @@ specifiers:
   eslint-config-prettier: ^6.12.0
   eslint-plugin-vue: ^6.2.2
   node-pre-gyp: ^0.15.0
+  normalize.css: ^8.0.1
   prettier: 2.1.2
   raiden-ts: ^0.11.1
   sass: ^1.26.12

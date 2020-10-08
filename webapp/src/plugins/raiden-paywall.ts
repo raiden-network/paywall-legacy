@@ -1,11 +1,6 @@
 import _Vue from 'vue';
 //import Vuex, {StoreOptions} from 'vuex'
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosError,
-} from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 //import Store from 'vuex';
 //import axiosRetry from "axios-retry";
 import { Address, BigNumberC } from 'raiden-ts';
