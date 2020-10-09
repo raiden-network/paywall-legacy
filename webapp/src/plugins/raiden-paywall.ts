@@ -7,10 +7,6 @@ import { Address, BigNumberC } from 'raiden-ts';
 import RaidenPaywall from './components/RaidenPaywall.vue';
 import BlockUI from 'vue-blockui';
 
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSpinner, faHourglassEnd } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
 //function is_raiden_rejected(error: AxiosError): boolean{
 //return (error.response?.status === 401 && error.response?.data?.identifier);
 //}
@@ -161,9 +157,7 @@ export interface RaidenPaywallOptions {
 }
 
 export function RaidenPaywallPlugin(Vue: typeof _Vue, _options?: any): void {
-  library.add(faSpinner, faHourglassEnd);
   Vue.use(BlockUI);
-  Vue.component('font-awesome-icon', FontAwesomeIcon);
 
   const paywall_options = _options as RaidenPaywallOptions;
 
@@ -177,6 +171,5 @@ declare module 'vue/types/vue' {
   interface Vue {
     $paywall: RaidenPaywallHandler;
     $http: AxiosInstance;
-    raiden_payment: undefined | RaidenPaymentExternal;
   }
 }

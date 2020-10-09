@@ -1,75 +1,100 @@
 <template>
-  <div v-if="showPopup">
-    <BlockUI>
-      <div v-if="requested">
-        <font-awesome-icon icon="spinner" />
-        <p>
-          This page contains paywalled content. Please make a
+  <BlockUI v-if="showPopup">
+    <div class="paywall">
+      <template v-if="requested">
+        <img
+          class="paywall__icon"
+          alt="Shopping icon"
+          src="../../assets/icons/shop.svg"
+        />
+        <div class="paywall__info">
+          <span>
+            {{
+              message
+                ? message
+                : 'Please make a Raiden payment to view this page'
+            }}
+          </span>
           <a
-            :href="raiden_payment.url"
+            class="paywall__info-link"
+            href="https://docs.raiden.network"
             target="_blank"
-            rel="noopener noreferrer"
-            >Raiden payment</a
           >
-          to the content provider in order to use this page.
-        </p>
-      </div>
-      <div v-else-if="timeout">
-        <font-awesome-icon icon="hourglass-end" />
-        <p>
-          The Raiden payment timed out. Please reload the page and make required
-          payments.
-        </p>
-      </div>
-    </BlockUI>
-  </div>
+            <img
+              class="paywall__info-icon"
+              alt="Info"
+              src="../../assets/icons/info.svg"
+            />
+          </a>
+        </div>
+        <a
+          class="paywall__button"
+          :href="raidenPayment.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Make Payment
+        </a>
+      </template>
+      <template v-else-if="timeout">
+        The Raiden payment timed out. Please reload the page and make the
+        required payment.
+      </template>
+    </div>
+  </BlockUI>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Prop } from 'vue-property-decorator';
 import { PaymentState, RaidenPaymentExternal } from '../raiden-paywall';
 
-@Component
+@Component({
+  watch: {
+    showPopup: function (show: boolean) {
+      if (show) {
+        document.documentElement.style.overflow = 'hidden';
+        return;
+      }
+      document.documentElement.style.overflow = 'auto';
+    },
+  },
+})
 export default class RaidenPaywall extends Vue {
+  @Prop() message!: string;
+
+  raidenPayment: RaidenPaymentExternal | null = null;
+
   created() {
     this.$paywall.register_callback((payment) => this.handlePayment(payment));
   }
 
-  get requested() {
-    return this.raiden_payment?.state === PaymentState.REQUESTED;
+  get requested(): boolean {
+    return this.raidenPayment?.state === PaymentState.REQUESTED;
   }
 
-  get timeout() {
-    return this.raiden_payment?.state === PaymentState.TIMEOUT;
+  get timeout(): boolean {
+    return this.raidenPayment?.state === PaymentState.TIMEOUT;
   }
 
-  get success() {
-    return this.raiden_payment?.state === PaymentState.SUCCESS;
+  get success(): boolean {
+    return this.raidenPayment?.state === PaymentState.SUCCESS;
   }
 
-  get showPopup() {
-    if (!this.raiden_payment) {
+  get showPopup(): boolean {
+    if (!this.raidenPayment) {
       return false;
     }
     return !this.success;
   }
 
-  data() {
-    return {
-      msg: 'RaidenPayment required',
-      raiden_payment: undefined,
-    };
-  }
-
   private handlePayment(payment: RaidenPaymentExternal): void {
-    // here the plugin vue part will go!
     switch (payment.state) {
       case PaymentState.REQUESTED:
-        this.raiden_payment = payment;
+        this.raidenPayment = payment;
         break;
       case PaymentState.SUCCESS:
-        if (this.raiden_payment?.identifier === payment.identifier) {
-          this.raiden_payment = payment;
+        if (this.raidenPayment?.identifier === payment.identifier) {
+          this.raidenPayment = payment;
           console.log(`Payment successful: ${payment}`);
         } else {
           console.warn('Payment successful, but other payment was waited on');
@@ -78,7 +103,7 @@ export default class RaidenPaywall extends Vue {
       case PaymentState.FAILED:
         break;
       case PaymentState.TIMEOUT:
-        this.raiden_payment = payment;
+        this.raidenPayment = payment;
         break;
       default:
         break;
@@ -87,32 +112,86 @@ export default class RaidenPaywall extends Vue {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-/* Define an animation behavior */
-@keyframes spinner {
-  to {
-    transform: rotate(360deg);
+<style scoped lang="scss">
+.loading-container::v-deep {
+  div.loading-backdrop {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0) 50%,
+      #000000 95%
+    );
+    opacity: 1;
+  }
+
+  div.loading {
+    background-color: #f9f9f9;
+    box-shadow: 0px 14px 40px rgba(0, 0, 0, 0.04);
+    border-radius: 18px;
+    padding: 37px 32px 32px 32px;
+    box-sizing: border-box;
+    width: 650px;
+    @media only screen and (max-width: 670px) {
+      width: 90vw;
+    }
   }
 }
-/* This is the class name given by the Font Awesome component when icon contains 'spinner' */
-.fa-spinner {
-  /* Apply 'spinner' keyframes looping once every second (1s)  */
-  animation: spinner 1s linear infinite;
-}
 
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.paywall {
+  font-size: 24px;
+  line-height: 31px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+
+  & > *:not(:last-child) {
+    margin-bottom: 32px;
+  }
+
+  &__icon {
+    height: 60px;
+  }
+
+  &__button {
+    display: block;
+    width: 100%;
+    max-width: 243px;
+    border-radius: 100px;
+    padding: 9.5px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    line-height: 21px;
+    font-weight: 500;
+    color: #000000;
+    text-decoration: none;
+    background-color: #44ddff;
+
+    &:hover {
+      background-color: #5ce1ff;
+    }
+
+    &:active {
+      background-color: #70e5ff;
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+
+    & > *:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
+
+  &__info-link {
+    line-height: 0;
+  }
+
+  &__info-icon {
+    height: 24px;
+  }
 }
 </style>

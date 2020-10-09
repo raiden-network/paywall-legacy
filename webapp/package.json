@@ -10,9 +10,6 @@
     "prettier:check": "prettier --check --config ./.prettierrc.json './**/*.{ts,tsx,html,css,scss,json,js,vue}'"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.30",
-    "@fortawesome/free-solid-svg-icons": "^5.14.0",
-    "@fortawesome/vue-fontawesome": "2",
     "axios": "^0.20.0",
     "axios-retry": "^3.1.8",
     "core-js": "^3.6.5",

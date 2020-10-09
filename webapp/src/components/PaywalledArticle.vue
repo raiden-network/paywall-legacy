@@ -10,7 +10,7 @@
         />
         <div class="article__publication-info">
           <span class="article__author">Raiden Network</span>
-          <span class="article__date">{{ article.date | formatDate}}</span>
+          <span class="article__date">{{ article.date | formatDate }}</span>
         </div>
       </div>
       <img
@@ -24,7 +24,9 @@
       </div>
     </article>
 
-    <RaidenPaywall />
+    <RaidenPaywall
+      :message="'Please make a Raiden payment to read this article'"
+    />
   </div>
 </template>
 
@@ -63,10 +65,10 @@ export default class PaywalledArticle extends Vue {
 .page-wrapper {
   max-width: $page-max-width;
   margin: auto;
+  padding: $page-padding;
 }
 
 .article {
-  padding: $page-padding;
   margin-top: 65px;
 
   &--full {
@@ -99,7 +101,6 @@ export default class PaywalledArticle extends Vue {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
   }
 
   &__author {

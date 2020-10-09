@@ -37,6 +37,7 @@ export default class AppHeader extends Vue {}
 .page-wrapper {
   max-width: $page-max-width;
   margin: auto;
+  padding: $page-padding;
 }
 
 .header {
@@ -47,7 +48,6 @@ export default class AppHeader extends Vue {}
   align-content: center;
   flex-wrap: wrap;
   min-height: 72px;
-  padding: $page-padding;
 
   &__logo {
     font-family: $mono-font;

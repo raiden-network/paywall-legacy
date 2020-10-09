@@ -1,7 +1,4 @@
 dependencies:
-  '@fortawesome/fontawesome-svg-core': 1.2.30
-  '@fortawesome/free-solid-svg-icons': 5.14.0
-  '@fortawesome/vue-fontawesome': 2.0.0_13006cfcca73583d6c9131ee6089dd43
   axios: 0.20.0
   axios-retry: 3.1.8
   core-js: 3.6.5
@@ -999,38 +996,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-bvM7Qz6eKnJVFIn+1LPtjlBFPVN5jNDc1XmN15vWe7Q3DPBufWWsLiIvUu7xW87uTG6QoggpIDnUgLQvPheU+Q==
-  /@fortawesome/fontawesome-common-types/0.2.30:
-    dev: false
-    engines:
-      node: '>=6'
-    resolution:
-      integrity: sha512-TsRwpTuKwFNiPhk1UfKgw7zNPeV5RhNp2Uw3pws+9gDAkPGKrtjR1y2lI3SYn7+YzyfuNknflpBA1LRKjt7hMg==
-  /@fortawesome/fontawesome-svg-core/1.2.30:
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 0.2.30
-    dev: false
-    engines:
-      node: '>=6'
-    resolution:
-      integrity: sha512-E3sAXATKCSVnT17HYmZjjbcmwihrNOCkoU7dVMlasrcwiJAHxSKeZ+4WN5O+ElgO/FaYgJmASl8p9N7/B/RttA==
-  /@fortawesome/free-solid-svg-icons/5.14.0:
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 0.2.30
-    dev: false
-    engines:
-      node: '>=6'
-    resolution:
-      integrity: sha512-M933RDM8cecaKMWDSk3FRYdnzWGW7kBBlGNGfvqLVwcwhUPNj9gcw+xZMrqBdRqxnSXdl3zWzTCNNGEtFUq67Q==
-  /@fortawesome/vue-fontawesome/2.0.0_13006cfcca73583d6c9131ee6089dd43:
-    dependencies:
-      '@fortawesome/fontawesome-svg-core': 1.2.30
-      vue: 2.6.12
-    dev: false
-    peerDependencies:
-      '@fortawesome/fontawesome-svg-core': '>= 1.2.0 < 1.3'
-      vue: ~2
-    resolution:
-      integrity: sha512-N3VKw7KzRfOm8hShUVldpinlm13HpvLBQgT63QS+aCrIRLwjoEUXY5Rcmttbfb6HkzZaeqjLqd/aZCQ53UjQpg==
   /@hapi/address/2.1.4:
     deprecated: This version has been deprecated and is no longer supported or maintained
     dev: true
@@ -9858,9 +9823,6 @@ packages:
     resolution:
       integrity: sha512-jcKpkthap6x63MB4TxwCyuIGkV0oYP/YRyuQU5UO0Yz/E/ZAu+653/uov+phdmO54n6BcvFRyyt0RRrWdN2mpw==
 specifiers:
-  '@fortawesome/fontawesome-svg-core': ^1.2.30
-  '@fortawesome/free-solid-svg-icons': ^5.14.0
-  '@fortawesome/vue-fontawesome': '2'
   '@typescript-eslint/eslint-plugin': ^2.33.0
   '@typescript-eslint/parser': ^2.33.0
   '@vue/cli-plugin-babel': ~4.5.0
