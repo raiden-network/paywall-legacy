@@ -3,7 +3,7 @@ import _Vue from 'vue';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 //import Store from 'vuex';
 //import axiosRetry from "axios-retry";
-import { Address, BigNumberC } from 'raiden-ts';
+import { Address} from 'raiden-ts';
 import RaidenPaywall from './components/RaidenPaywall.vue';
 import BlockUI from 'vue-blockui';
 
@@ -12,7 +12,7 @@ import BlockUI from 'vue-blockui';
 //}
 
 function is_raiden_payment_required(error: AxiosError): boolean {
-  return error.response?.status === 402 && error.response?.data?.identifier;
+  return error.response?.status === 402 && error.response?.data?.payment.id;
 }
 
 export enum PaymentState {
@@ -22,26 +22,52 @@ export enum PaymentState {
   TIMEOUT = 'TIMEOUT',
 }
 
+interface Participant {
+  address: Address;
+  network_id: number;
+}
+
+interface Token {
+  address: Address;
+  decimals: number;
+  network_id: number;
+}
+
+interface RaidenPreview {
+  date: Date;
+  description: string;
+  id: string;
+  image_url: URL;
+  preview: string;
+  title: string;
+}
+
 interface RaidenPayment {
-  token: Address;
-  receiver: Address;
-  identifier: BigNumberC;
+  token: Token;
+  receiver: Participant;
+  id: string;
+  // TODO use string and parse number from that?
   amount: number;
+  claimed: boolean;
+  timeout: Date;
 }
 
 // TODO rename this one to RaidenPayment
 export interface RaidenPaymentExternal extends RaidenPayment {
   state: PaymentState;
   url: URL;
+  id: string;
 }
 
 function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export class RaidenPaywallHandler {
   // TODO check correct type
   public axios: AxiosInstance;
+  // TODO change type
+  public current_preview: RaidenPreview | undefined;
   private raiden_dapp_url: URL;
   private _callbacks: { (payment: RaidenPaymentExternal): void }[];
   private _pollInitialWaitTime: number;
@@ -56,6 +82,7 @@ export class RaidenPaywallHandler {
     this._pollInterval = options.pollInterval || 2_000;
     this._pollMaxWaitTime = options.pollMaxWaitTime || 120_000;
     this._pollInitialWaitTime = options.pollInitialWaitTime || 0;
+    this.current_preview = undefined;
 
     this.axios = axios.create(config);
     this._callbacks = [];
@@ -73,15 +100,16 @@ export class RaidenPaywallHandler {
   ): RaidenPaymentExternal {
     let new_payment = payment as RaidenPaymentExternal;
     new_payment.state = state;
+    new_payment.id = payment.id;
     new_payment.url = new URL(
-      `#/transfer/${payment.token}/${payment.receiver}?identifier=${payment.identifier}&amount=${payment.amount}`,
+      `#/transfer/${payment.token.address}/${payment.receiver.address}?identifier=${payment.id}&amount=${payment.amount}`,
       this.raiden_dapp_url,
     );
     return new_payment;
   }
 
   private callback(payment: RaidenPaymentExternal) {
-    this._callbacks.forEach((callback) => {
+    this._callbacks.forEach(callback => {
       callback(payment);
     });
   }
@@ -95,7 +123,6 @@ export class RaidenPaywallHandler {
     payment_timeout: Date,
   ): boolean {
     const time_now = new Date().getTime().valueOf();
-    console.log(start_poll_time.getTime(), payment_timeout.getTime());
     return (
       time_now > payment_timeout.getTime().valueOf() ||
       time_now - start_poll_time.getTime().valueOf() > this._pollMaxWaitTime
@@ -105,9 +132,16 @@ export class RaidenPaywallHandler {
   private async _handle_response_error(error: AxiosError): Promise<any> {
     if (error.response) {
       if (is_raiden_payment_required(error)) {
-        const payment = error.response.data;
+        const {
+          payment,
+          preview,
+        }: {
+          payment: RaidenPayment;
+          preview: RaidenPreview;
+        } = error.response.data;
         this.callback(this.add_state(payment, PaymentState.REQUESTED));
-        error.config.headers['X-Raiden-Payment-Id'] = payment.identifier;
+        this.current_preview = preview;
+        error.config.headers['X-Raiden-Payment-Id'] = payment.id;
         let last_error = undefined;
         const started_time = new Date();
         // TODO introduce a sync barrier here, that blocks until

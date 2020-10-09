@@ -63,7 +63,7 @@ def get_markdown_assets(search_path):
 
 # For now, use global dict
 ENDPOINTS = {}  # UUID -> Endpoint
-BASE_PRICE = 0.0001
+BASE_PRICE = 0.0000001
 
 
 app = Flask(__name__)

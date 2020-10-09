@@ -62,12 +62,11 @@ class Participant(Base):
 class Payment(Base):
     __tablename__ = "payment"
 
-    identifier: int
+    id: str
     timeout: DateTime
     amount: float
     token: Token
     receiver: Participant
-    claimed: bool
 
     # FIXME BigInteger is a SIGNED INT64!
     identifier = Column(BigInteger, primary_key=True, unique=False, autoincrement=False)
@@ -86,6 +85,9 @@ class Payment(Base):
     payment_event = Column(PickleType)
     claimed = Column(Boolean(), unique=False, default=False)
 
+    @property
+    def id(self):
+        return str(self.identifier)
 
     @staticmethod
     def create_filter(identifier: int = None, state: PaymentState = None):

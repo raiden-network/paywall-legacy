@@ -19,5 +19,5 @@ const raidenOptions = {
 Vue.use(RaidenPaywallPlugin, raidenOptions);
 
 new Vue({
-  render: (h) => h(App),
+  render: h => h(App),
 }).$mount('#app');

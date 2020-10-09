@@ -65,7 +65,7 @@ export default class RaidenPaywall extends Vue {
   raidenPayment: RaidenPaymentExternal | null = null;
 
   created() {
-    this.$paywall.register_callback((payment) => this.handlePayment(payment));
+    this.$paywall.register_callback(payment => this.handlePayment(payment));
   }
 
   get requested(): boolean {
@@ -93,7 +93,7 @@ export default class RaidenPaywall extends Vue {
         this.raidenPayment = payment;
         break;
       case PaymentState.SUCCESS:
-        if (this.raidenPayment?.identifier === payment.identifier) {
+        if (this.raidenPayment?.id === payment.id) {
           this.raidenPayment = payment;
           console.log(`Payment successful: ${payment}`);
         } else {

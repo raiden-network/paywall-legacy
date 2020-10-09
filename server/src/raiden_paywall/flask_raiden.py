@@ -245,8 +245,10 @@ class RaidenPaywall(object):
                 return jsonify(payment=payment, preview=preview), 401
             else:
                 # TODO we could allow prepayment here / create an awaited payment with the specified id
+                print("Not awaited")
                 return "Specified X-Raiden-Payment-Id is not awaited.", 404
         payment = await_payment(self.config.receiver, self.config.token, self.amount, self.config.default_timeout)
+        print(f'Created awaited payment with id:{payment.identifier}')
         if payment_id:
             return jsonify(payment=payment, preview=preview), 401
         else:
@@ -264,7 +266,6 @@ def await_payment(receiver, token, amount, timeout):
         tries = 0
         while tries <= 5:
             one_awaited = True
-            payment_id = 1
             while one_awaited:
                 payment_id = random.randint(0, 2**63 - 1)
                 filter_ = Payment.create_filter(payment_id, PaymentState.AWAITED)
@@ -284,7 +285,7 @@ def await_payment(receiver, token, amount, timeout):
 
             payment = Payment(
                 identifier=int(payment_id),
-                counter =counter,
+                counter=counter,
                 amount=amount,
                 timeout=datetime.datetime.now() + timeout,
                 receiver=receiver,

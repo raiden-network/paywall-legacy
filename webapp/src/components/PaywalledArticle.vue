@@ -36,7 +36,7 @@ import { Article } from '../model/types';
 
 @Component({
   filters: {
-    formatDate: function (dateString: string) {
+    formatDate: function(dateString: string) {
       const date = new Date(dateString);
       const options: any = { month: 'short', day: 'numeric' };
       if (date.getFullYear() !== new Date().getFullYear()) {
@@ -52,7 +52,9 @@ export default class PaywalledArticle extends Vue {
   content = '';
 
   async mounted() {
-    const response = await this.$http.get('http://localhost:5000');
+    const response = await this.$http.get(
+      'http://localhost:5000/articles/601352b511f644cf505b0b8983846a76',
+    );
     this.content = response.data;
   }
 }
