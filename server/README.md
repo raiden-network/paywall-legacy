@@ -99,7 +99,7 @@ E.g. this is a non deterministic endpoint pricing:
 import datetime
 
 @app.route('/paytime')
-def get_expensive_stuff(computations):
+def get_expensive_stuff():
 	current_time = datetime.datetime.utcnow()
 	paywall.amount = current_time.timestamp() * 0.00001
 	if not paywall.check_payment():
