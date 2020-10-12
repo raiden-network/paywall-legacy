@@ -72,3 +72,6 @@ MANIFEST
 # Per-project virtualenvs
 .venv*/
 venv*/
+
+# DB
+server/paywall.db
