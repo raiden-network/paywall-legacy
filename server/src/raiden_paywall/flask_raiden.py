@@ -248,7 +248,6 @@ class RaidenPaywall(object):
             else:
                 return "Specified X-Raiden-Payment-Id is not awaited.", 404
         payment = await_payment(self.config.receiver, self.config.token, self.amount, self.config.default_timeout)
-        print(f'Created awaited payment with id:{payment.identifier}')
         if payment_id:
             return jsonify(payment=payment, preview=preview), 401
         else:
@@ -257,21 +256,21 @@ class RaidenPaywall(object):
 
 
 def await_payment(receiver, token, amount, timeout):
-    # FIXME 2**64 is within bruteforce reach! Fix raiden ids!
-    # FIXME SQL BigInt is a signed int64! for now, we constrain 
-    # the ids to be smaller in the positive range, but this 
-    # decreases collision resistance significantly even further
 
     try:
         tries = 0
         while tries <= 5:
             one_awaited = True
             while one_awaited:
+                # FIXME 2**64 is within bruteforce reach! Fix raiden ids!
+                # FIXME SQL BigInt is a signed int64! for now, we constrain 
+                # the ids to be smaller in the positive range, but this 
+                # decreases collision resistance significantly even further
                 payment_id = random.randint(0, 2**63 - 1)
                 filter_ = Payment.create_filter(payment_id, PaymentState.AWAITED)
                 one_awaited = filter_.one_or_none()
                 # FIXME if all possible payment_id's are in state AWAITED,
-                # this blocks/ queries until it finds a free id again. 
+                # this blocks/ queries until it finds a free id again.
                 # Probably this is what we want though ...?
 
             session = db_session()

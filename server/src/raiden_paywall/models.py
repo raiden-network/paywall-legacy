@@ -70,9 +70,6 @@ class Payment(Base):
 
     # FIXME BigInteger is a SIGNED INT64!
     identifier = Column(BigInteger, primary_key=True, unique=False, autoincrement=False)
-    # TODO use an autincrementing secondary id as a "nonce" in order to avoid rare
-    # identifier clashes upon creation of new awaited payments ("optimistic locking" strategy):
-    # secondary_id = Column(BigInteger, primary_key=True, unique=False, autoincrement=True)
     counter = Column(Integer, primary_key=True, unique=False)
     timeout = Column(DateTime(), nullable=False)
     amount = Column(Float(), nullable=False)
@@ -91,8 +88,6 @@ class Payment(Base):
 
     @staticmethod
     def create_filter(identifier: int = None, state: PaymentState = None):
-        # TODO should we do a housekeeping before returning? setting the state appropriately etc
-        # based on the timeout
         base_filter = Payment.query
         if identifier:
             base_filter = base_filter.filter_by(identifier=identifier)

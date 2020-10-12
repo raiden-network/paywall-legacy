@@ -5,7 +5,6 @@ from flask import _app_ctx_stack
 
 
 SQLALCHEMY_DATABASE_URI = 'sqlite:///paywall.db'
-# TODO necessary?
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
@@ -38,7 +37,6 @@ from raiden.api.v1.encoding import EventPaymentReceivedSuccessSchema
 PaymentReceivedSchema = EventPaymentReceivedSuccessSchema()
 
 
-
 from typing import Union
 import decimal
 from decimal import localcontext
@@ -61,8 +59,6 @@ def to_absolute_amount(number: Union[float, str], decimals: int) -> int:
 
     if d_number < 1 and "." in s_number:
         with localcontext() as ctx:
-            # '0.000001'
-            # 8 - 1 - 1 = 6
             multiplier = len(s_number) - s_number.index(".") - 1
 
             ctx.prec = multiplier
@@ -84,6 +80,8 @@ def database_update_payments(raiden):
     # by the thread and reused.
     session = db_session()
     try:
+        # TODO check wether this locks the whole table and find a solution where we 
+        # only lock the individual entries while consuming them in an iterator
         awaited = Payment.create_filter(identifier=None, state=PaymentState.AWAITED).with_for_update(of=Payment)
         if awaited.first():
             id_payment_map = {payment.identifier: payment for payment in awaited}
@@ -91,9 +89,6 @@ def database_update_payments(raiden):
                     payment = id_payment_map.get(int(raiden_payment["identifier"]))
                     if payment:
                         if int(raiden_payment['amount']) >= to_absolute_amount(payment.amount, payment.token.decimals):
-                            # TODO with lock payment row
-                            # TODO parse and create object, or directly save the json string in db?
-                            print("Found payment:", raiden_payment)
                             payment_received_event = PaymentReceivedSchema.make_object(raiden_payment)
                             payment.payment_event = payment_received_event
             session.commit()
