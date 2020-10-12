@@ -1,15 +1,14 @@
 ---
 title: Raiden Pulse #13: News from July and August
-description: Two more months have passed by and it’s time for a new bi-monthly summary of all things Raiden
+description: Two more months have passed by and it’s time for a new bi-monthly summary of all things Raiden.
+date: 2020-09-03
+imageUrl: https://miro.medium.com/max/700/1*UBQGJ9Z1Z8Ib25AqNx7LEQ.png
 preview: >
-  Two more months have passed by and it’s time for a new bi-monthly summary of all things Raiden: 
-  overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in July and August.
+  Two more months have passed by and it’s time for a new bi-monthly summary of all things Raiden: overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in July and August.
   The overarching focus of July was our participation in the Great Reddit Scaling Bake-Off.
   In August, the main focus has been on some maintenance work and continuing the implementation of WebRTC for the transport layer in the Raiden python client.
   The light client team is still working towards reaching parity with the Alderaan release.
   Let’s dig in!
-date: 2020-09-03
-imageUrl: https://miro.medium.com/max/700/1*UBQGJ9Z1Z8Ib25AqNx7LEQ.png 
 ---
 
 Two more months have passed by and it’s time for a new bi-monthly summary of all things Raiden: overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in July and August. The overarching focus of July was our participation in the Great Reddit Scaling Bake-Off. In August, the main focus has been on some maintenance work and continuing the implementation of WebRTC for the transport layer in the Raiden python client. The light client team is still working towards reaching parity with the Alderaan release. Let’s dig in!

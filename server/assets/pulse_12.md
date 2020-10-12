@@ -1,10 +1,11 @@
 ---
 title: Raiden Pulse #12: News from May and June
 description: Overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in May and June.
-preview: >
-  We’re halfway through 2020, which means it’s time for a new bi-monthly summary of all things Raiden: overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in May and June. In May we reached a major milestone as we released the long awaited Alderaan version. More on this and other interesting news later in the update. Let’s dig into what’s new with Raiden!
 date: 2020-07-08
 imageUrl: https://miro.medium.com/max/700/1*AtEQE2_RjHofbj5jwtewWw.png
+preview: >
+  We’re halfway through 2020, which means it’s time for a new bi-monthly summary of all things Raiden: overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in May and June.
+  In May we reached a major milestone as we released the long awaited Alderaan version. More on this and other interesting news later in the update. Let’s dig into what’s new with Raiden!
 ---
 
 
