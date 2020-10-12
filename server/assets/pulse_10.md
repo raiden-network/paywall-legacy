@@ -8,8 +8,6 @@ preview: >
   We hope you all had a good start to the new decade. Let’s dig into what’s new with Raiden!
 ---
 
-# Raiden Pulse #10: News from January and February
-
 It is time for our bi-monthly summary of all things Raiden: overall development progress, product updates, event participation and all the other stuff that we’ve been up to in January and February. We hope you all had a good start to the new decade. Let’s dig into what’s new with Raiden!
 
 

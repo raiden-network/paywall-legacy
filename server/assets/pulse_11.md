@@ -10,8 +10,6 @@ preview: >
 ---
 
 
-# Raiden Pulse #11: News from March and April
-
 Yet another two months have passed by and it’s time for the bi-monthly summary of all things Raiden: overall development progress, product updates, event participation and all the other stuff that we’ve been up to in March and April. While big parts of the World, as we know it, have been on hold for the last two months, the Raiden team has continued to work towards the Alderaan release. We hope you’re all staying safe in these hard times and that it won’t be long before things can go back to normal. Let’s dig into what’s new with Raiden!
 
 
