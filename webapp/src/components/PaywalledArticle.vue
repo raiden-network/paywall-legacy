@@ -36,7 +36,7 @@ import { Article } from '../model/types';
 
 @Component({
   filters: {
-    formatDate: function(dateString: string) {
+    formatDate: function (dateString: string) {
       const date = new Date(dateString);
       const options: any = { month: 'short', day: 'numeric' };
       if (date.getFullYear() !== new Date().getFullYear()) {
@@ -53,7 +53,7 @@ export default class PaywalledArticle extends Vue {
 
   async mounted() {
     const response = await this.$http.get(
-      'http://localhost:5000/articles/601352b511f644cf505b0b8983846a76',
+      'http://localhost:5000/articles/50d3b1f958a14d6e71eea48812a0cf79',
     );
     this.content = response.data;
   }
@@ -120,8 +120,64 @@ export default class PaywalledArticle extends Vue {
     font-size: 21px;
     line-height: 32px;
 
-    p {
-      margin: 32px 0 0 0;
+    &::v-deep {
+      p {
+        margin: 32px 0 0 0;
+      }
+
+      h2,
+      h3 {
+        margin: 60px 0 0 0;
+        font-size: 36px;
+        line-height: 43px;
+        font-weight: 700;
+      }
+
+      h4 {
+        margin: 48px 0 0 0;
+        font-size: 24px;
+        line-height: 31px;
+        font-weight: 700;
+      }
+
+      ul {
+        margin: 32px 0 0 0;
+        list-style: '- ' outside;
+        padding: 0 0 0 16px;
+      }
+
+      li {
+        margin: 16px 0 0 0;
+      }
+
+      a {
+        text-decoration: underline;
+        color: $black;
+
+        &:hover {
+          color: $hovered-link-grey;
+        }
+
+        &:active {
+          color: $active-link-grey;
+        }
+      }
+
+      strong  {
+        font-weight: 700;
+      }
+
+      em {
+        font-style: italic;
+      }
+
+      hr {
+        margin: 60px auto;
+        border: none;
+        border-top: 5px dotted $black;
+        width: 48px;
+        
+      }
     }
   }
 }
