@@ -10,7 +10,7 @@ import markdown2
 from flask_cors import CORS
 from flask import Flask, abort, jsonify, current_app
 
-from .flask_raiden import RaidenPaywall
+from raiden_paywall.flask_raiden import RaidenPaywall
 
 
 @dataclass

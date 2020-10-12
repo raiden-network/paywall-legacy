@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import datetime
 from sqlalchemy import Column, String, Boolean, Float, DateTime, PickleType, BigInteger, Enum, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
-from .database import Base
+from raiden_paywall.database import Base
 
 
 class PaymentState(enum.Enum):

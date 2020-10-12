@@ -14,8 +14,8 @@ import datetime
 from flask.logging import default_handler
 from pytimeparse import parse
 
-from .database import db_session, init_db, start_raiden_db_thread
-from .models import Participant, Payment, Token, NetworkId, PaymentState
+from raiden_paywall.database import db_session, init_db, start_raiden_db_thread
+from raiden_paywall.models import Participant, Payment, Token, NetworkId, PaymentState
 
 
 root = logging.getLogger()
