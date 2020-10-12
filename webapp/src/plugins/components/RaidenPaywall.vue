@@ -87,6 +87,10 @@ export default class RaidenPaywall extends Vue {
     return !this.success;
   }
 
+  destroyed() {
+    document.documentElement.style.overflow = 'auto';
+  }
+
   private handlePayment(payment: RaidenPaymentExternal): void {
     switch (payment.state) {
       case PaymentState.REQUESTED:

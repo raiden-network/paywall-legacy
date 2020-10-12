@@ -10,7 +10,7 @@
         <img
           class="article__author-image"
           alt="Image of author"
-          src="../assets/icons/raiden.png"
+          src="../assets/images/raiden.png"
         />
         <div class="article__publication-info">
           <span class="article__author">Raiden Network</span>
@@ -38,18 +38,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Article } from '../model/types';
 
-@Component({
-  filters: {
-    formatDate: function (dateString: string) {
-      const date = new Date(dateString);
-      const options: any = { month: 'short', day: 'numeric' };
-      if (date.getFullYear() !== new Date().getFullYear()) {
-        options.year = 'numeric';
-      }
-      return date.toLocaleDateString(undefined, options);
-    },
-  },
-})
+@Component
 export default class PaywalledArticle extends Vue {
   article: Article | null = null;
   content = '';
@@ -88,7 +77,7 @@ export default class PaywalledArticle extends Vue {
   margin-top: 65px;
 
   &--full {
-    margin-bottom: 732px;
+    margin-bottom: 60vh;
   }
 
   &__title {

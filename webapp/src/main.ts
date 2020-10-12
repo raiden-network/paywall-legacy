@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import App from './App.vue';
 import Home from './components/Home.vue';
 import PaywalledArticle from './components/PaywalledArticle.vue';
+import './filters/formatDate';
 import './main.scss';
 
 import {
@@ -16,10 +17,11 @@ Vue.use(VueRouter);
 
 const router = new VueRouter({
   routes: [
-    { path: '/article/:id', component: PaywalledArticle },
+    { path: '/', name: 'home', component: Home },
+    { path: '/article/:id', name: 'article', component: PaywalledArticle },
     { path: '*', component: Home },
   ],
-}); // TODO redirect for * to home page
+});
 
 const raidenOptions = {
   raidenUrl: new URL('http://lightclient.raiden.network/staging/'),
