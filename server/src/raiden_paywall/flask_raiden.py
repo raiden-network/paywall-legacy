@@ -217,13 +217,16 @@ class RaidenPaywall(object):
         return preview
 
     def check_payment(self):
+        if self.amount == 0.:
+            return True
         payment_id = request.headers.get('X-Raiden-Payment-Id')
         if payment_id:
             payment = Payment.create_filter(identifier=int(payment_id), state=PaymentState.PAID).with_for_update(of=Payment).one_or_none()
             if payment:
                 payment.claimed = True
                 db_session().commit()
-                self.claimed_payment = True
+                # This signals that the payment was checked and successfully claimed in this request
+                self._claimed_payment = True
                 return True
         return False
 
@@ -237,15 +240,12 @@ class RaidenPaywall(object):
             payment_id = int(payment_id)
             payment = Payment.create_filter(identifier=payment_id, state=PaymentState.PAID).one_or_none()
             if payment:
-                # TODO should we handle this case silently and call check_payment ourselves?
-                raise Exception("Payment was claimable! Please call `check_payment` for paywalled resources")
+                assert False, 'The payment should have been claimed in this request'
             payment = Payment.create_filter(identifier=payment_id, state=PaymentState.AWAITED).one_or_none()
             if payment:
                 log.info(f"Payment not redeemable yet: {payment}")
                 return jsonify(payment=payment, preview=preview), 401
             else:
-                # TODO we could allow prepayment here / create an awaited payment with the specified id
-                print("Not awaited")
                 return "Specified X-Raiden-Payment-Id is not awaited.", 404
         payment = await_payment(self.config.receiver, self.config.token, self.amount, self.config.default_timeout)
         print(f'Created awaited payment with id:{payment.identifier}')

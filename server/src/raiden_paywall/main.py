@@ -129,7 +129,7 @@ def get_expensive_stuff(computations):
     if not paywall.check_payment():
         # return paywall.preview(None)
         return paywall.preview(f'If you pay, this would compute {computations} rounds of computations!')
-    # Because then I could price heavy computation, before 
+    # Because then we could price heavy computation, before 
     # actually having to do the compuation
     for _ in range(computations):
         pr = 213123
