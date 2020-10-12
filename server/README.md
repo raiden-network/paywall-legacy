@@ -47,7 +47,7 @@ RD_API_ENDPOINT = 'http://localhost:5002'  # the API endpoint of the Raiden node
 RD_NETWORK_ID = 5  # Network id - should correspond to the Network the Raiden node is running on. Currently only 5 (GOERLI) supported
 ```
 
-The flask application has then to be started with the environment ``RAIDEN_PAYWALL_SETTINGS` variable set to the configuration file path.
+The flask application has then to be started with the environment `variable RAIDEN_PAYWALL_SETTINGS` set to the configuration file path.
 
 
 
@@ -76,16 +76,8 @@ def get_expensive_stuff(computations):
     # now we also add dynamic pricing based on the request param!
     paywall.amount += 0.000001 * computations
 
-    # NOTE: since there is no strict association between a specific request
-    # (within a certain user session), the amount should always be deterministic
-    # for a specific combination of endpoint/request parameters!
-    # Otherwise the user will make a request, pay the required amount,
-    # When upon repeating the exact same request, only with an added X-Raiden-Payment-Id
-    # the amount increases, the resource will not be unlocked!
-
     # We want to be able to have control over when the paywall is checked.
     if not paywall.check_payment():
-        # return paywall.preview(None)
         return paywall.preview(f'If you pay, this would compute {computations} rounds of computations!')
     # Because then we could price heavy computation, before 
     # actually having to do the compuation
@@ -96,5 +88,22 @@ def get_expensive_stuff(computations):
     return f"Thank you for paying! Here is the result of your computation: {pr}"
 ```
 
+Since there is no strict association between a specific request
+(within a certain user session), the amount should always be deterministic
+for a specific combination of endpoint/request parameters!
 
+E.g. this is a non deterministic endpoint pricing:
+
+```python
+
+import datetime
+
+@app.route('/paytime')
+def get_expensive_stuff(computations):
+	current_time = datetime.datetime.utcnow()
+	paywall.amount = current_time.timestamp() * 0.00001
+	if not paywall.check_payment():
+		return paywall.preview(f'You know what time it is?')
+	return currrent_time
+```
 
