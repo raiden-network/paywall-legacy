@@ -1,8 +1,9 @@
 export interface Article {
-  readonly id: number;
+  readonly id: string;
   readonly title: string;
   readonly description: string;
   readonly preview: string;
   readonly date: string;
-  readonly imageUrl: string;
+  readonly image_url: string;
+  readonly path: string;
 }

@@ -3,7 +3,7 @@ import _Vue from 'vue';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 //import Store from 'vuex';
 //import axiosRetry from "axios-retry";
-import { Address} from 'raiden-ts';
+import { Address } from 'raiden-ts';
 import RaidenPaywall from './components/RaidenPaywall.vue';
 import BlockUI from 'vue-blockui';
 
@@ -60,7 +60,7 @@ export interface RaidenPaymentExternal extends RaidenPayment {
 }
 
 function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export class RaidenPaywallHandler {
@@ -109,7 +109,7 @@ export class RaidenPaywallHandler {
   }
 
   private callback(payment: RaidenPaymentExternal) {
-    this._callbacks.forEach(callback => {
+    this._callbacks.forEach((callback) => {
       callback(payment);
     });
   }

@@ -65,7 +65,7 @@ export default class RaidenPaywall extends Vue {
   raidenPayment: RaidenPaymentExternal | null = null;
 
   created() {
-    this.$paywall.register_callback(payment => this.handlePayment(payment));
+    this.$paywall.register_callback((payment) => this.handlePayment(payment));
   }
 
   get requested(): boolean {

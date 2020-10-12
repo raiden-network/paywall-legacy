@@ -1,6 +1,10 @@
 <template>
   <div class="page-wrapper">
-    <article class="article" :class="{ 'article--full': content }">
+    <article
+      v-if="article"
+      class="article"
+      :class="{ 'article--full': content }"
+    >
       <h1 class="article__title">{{ article.title }}</h1>
       <div class="article__info">
         <img
@@ -16,7 +20,7 @@
       <img
         class="article__image"
         alt="Image for article"
-        :src="article.imageUrl"
+        :src="article.image_url"
       />
       <div v-if="content" v-html="content" class="article__content"></div>
       <div v-else class="article__content">
@@ -31,7 +35,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 import { Article } from '../model/types';
 
 @Component({
@@ -47,16 +51,26 @@ import { Article } from '../model/types';
   },
 })
 export default class PaywalledArticle extends Vue {
-  @Prop() article!: Article;
-
+  article: Article | null = null;
   content = '';
 
   async mounted() {
-    const response = await this.$http.get(
-      'http://localhost:5000/articles/50d3b1f958a14d6e71eea48812a0cf79',
+    const indexResponse = await this.$http.get('http://localhost:5000/');
+    const filteredArticles = indexResponse.data.filter(
+      (article: Article) => article.id === this.$route.params.id,
     );
-    this.content = response.data;
+    if (filteredArticles.length === 0) {
+      this.$router.replace('/');
+    }
+    this.article = filteredArticles[0];
+
+    const articleResponse = await this.$http.get(
+      `http://localhost:5000/articles/${this.article?.id}`,
+    );
+    this.content = articleResponse.data;
   }
+
+  // TODO refactor to watch for route param changes
 }
 </script>
 
@@ -163,7 +177,7 @@ export default class PaywalledArticle extends Vue {
         }
       }
 
-      strong  {
+      strong {
         font-weight: 700;
       }
 
@@ -176,7 +190,6 @@ export default class PaywalledArticle extends Vue {
         border: none;
         border-top: 5px dotted $black;
         width: 48px;
-        
       }
     }
   }
