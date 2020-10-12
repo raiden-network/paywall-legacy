@@ -1,18 +1,17 @@
+from flask import _app_ctx_stack
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-from flask import _app_ctx_stack
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-
-SQLALCHEMY_DATABASE_URI = 'sqlite:///paywall.db'
+SQLALCHEMY_DATABASE_URI = "sqlite:///paywall.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URI
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
+db_session = scoped_session(
+    sessionmaker(autocommit=False, autoflush=False, bind=engine),
+    scopefunc=_app_ctx_stack.__ident_func__,
 )
-db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine),
-                            scopefunc=_app_ctx_stack.__ident_func__)
 
 Base = declarative_base()
 Base.query = db_session.query_property()
@@ -23,23 +22,24 @@ def init_db():
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
     import raiden_paywall.models
+
     Base.metadata.create_all(bind=engine)
 
 
-import requests
-from threading import Timer
-from .models import Payment, PaymentState
 import time
+from threading import Timer
 
-
+import requests
 from raiden.api.v1.encoding import EventPaymentReceivedSuccessSchema
+
+from .models import Payment, PaymentState
 
 PaymentReceivedSchema = EventPaymentReceivedSuccessSchema()
 
 
-from typing import Union
 import decimal
 from decimal import localcontext
+from typing import Union
 
 
 def to_absolute_amount(number: Union[float, str], decimals: int) -> int:
@@ -52,7 +52,6 @@ def to_absolute_amount(number: Union[float, str], decimals: int) -> int:
 
     s_number = str(number)
     unit_value = decimal.Decimal(10 ** decimals)
-
 
     if d_number == decimal.Decimal(0):
         return 0
@@ -69,7 +68,7 @@ def to_absolute_amount(number: Union[float, str], decimals: int) -> int:
         ctx.prec = 999
         result_value = decimal.Decimal(value=d_number, context=ctx) * unit_value
 
-    if result_value < 0 or result_value > 2** 256 - 1:
+    if result_value < 0 or result_value > 2 ** 256 - 1:
         raise ValueError("Resulting token value must be between 1 and 2**256 - 1")
 
     return int(result_value)
@@ -80,20 +79,26 @@ def database_update_payments(raiden):
     # by the thread and reused.
     session = db_session()
     try:
-        # TODO check wether this locks the whole table and find a solution where we 
+        # TODO check wether this locks the whole table and find a solution where we
         # only lock the individual entries while consuming them in an iterator
-        awaited = Payment.create_filter(identifier=None, state=PaymentState.AWAITED).with_for_update(of=Payment)
+        awaited = Payment.create_filter(
+            identifier=None, state=PaymentState.AWAITED
+        ).with_for_update(of=Payment)
         if awaited.first():
             id_payment_map = {payment.identifier: payment for payment in awaited}
             for raiden_payment in raiden.iter_payments():
-                    payment = id_payment_map.get(int(raiden_payment["identifier"]))
-                    if payment:
-                        if int(raiden_payment['amount']) >= to_absolute_amount(payment.amount, payment.token.decimals):
-                            payment_received_event = PaymentReceivedSchema.make_object(raiden_payment)
-                            payment.payment_event = payment_received_event
+                payment = id_payment_map.get(int(raiden_payment["identifier"]))
+                if payment:
+                    if int(raiden_payment["amount"]) >= to_absolute_amount(
+                        payment.amount, payment.token.decimals
+                    ):
+                        payment_received_event = PaymentReceivedSchema.make_object(
+                            raiden_payment
+                        )
+                        payment.payment_event = payment_received_event
             session.commit()
 
-    except Exception as e :
+    except Exception as e:
         print(f"There was an Error: {e}")
 
 

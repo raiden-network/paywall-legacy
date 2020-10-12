@@ -1,28 +1,37 @@
-from functools import wraps
-from flask import g, request, redirect, url_for, make_response, current_app, Flask, _app_ctx_stack, jsonify, abort, request, make_response
-from flask.globals import _app_ctx_err_msg
-from dataclasses import dataclass 
-import json 
+import datetime
+import json
 import logging
 import random
-from typing import Optional
+from dataclasses import dataclass
+from functools import wraps
+from typing import Any, Optional
 
-from sqlalchemy.sql.expression import func
-from sqlalchemy.exc import IntegrityError
 import requests
-import datetime
+from flask import (
+    Flask,
+    _app_ctx_stack,
+    abort,
+    current_app,
+    g,
+    jsonify,
+    make_response,
+    redirect,
+    request,
+    url_for,
+)
+from flask.globals import _app_ctx_err_msg
 from flask.logging import default_handler
 from pytimeparse import parse
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.expression import func
 
 from raiden_paywall.database import db_session, init_db, start_raiden_db_thread
-from raiden_paywall.models import Participant, Payment, Token, NetworkId, PaymentState
-
+from raiden_paywall.models import NetworkId, Participant, Payment, PaymentState, Token
 
 root = logging.getLogger()
 root.addHandler(default_handler)
 
-log = logging.getLogger('werkzeug')
-log.info('test logging')
+log = logging.getLogger("werkzeug")
 
 
 def get_or_create(model, **kwargs):
@@ -36,12 +45,11 @@ def get_or_create(model, **kwargs):
 
 
 def prepare_response(response, payment):
-    response.headers['X-Raiden-Payment-Id'] = payment.identifier
+    response.headers["X-Raiden-Payment-Id"] = payment.identifier
     return response
 
 
 def register_ctx_proxy(name, init_value):
-
     def getter(obj):
         ctx = _app_ctx_stack.top
         if ctx is not None:
@@ -80,37 +88,42 @@ class PaymentConfig:
         return Participant.query.get(self.receiver_address)
 
     def init_database(self):
-        token = get_or_create(Token, address=self.token_address, decimals=self.token_decimals,
-                      network_id=self.network_id)
-        receiver = get_or_create(Participant, address=self.receiver_address, network_id=self.network_id)
+        token = get_or_create(
+            Token,
+            address=self.token_address,
+            decimals=self.token_decimals,
+            network_id=self.network_id,
+        )
+        receiver = get_or_create(
+            Participant, address=self.receiver_address, network_id=self.network_id
+        )
         db_session().commit()
-
 
     @classmethod
     def from_config(cls, config):
-        if not (token_address := config.get('RD_TOKEN_ADDRESS')):
+        if not (token_address := config.get("RD_TOKEN_ADDRESS")):
             raise KeyError("Config necessary!")
 
-        if not (token_decimals := config.get('RD_TOKEN_DECIMALS')):
+        if not (token_decimals := config.get("RD_TOKEN_DECIMALS")):
             raise KeyError("Config necessary!")
 
-        if not (receiver_address := config.get('RD_RECEIVER_ADDRESS')):
+        if not (receiver_address := config.get("RD_RECEIVER_ADDRESS")):
             raise KeyError("Config necessary!")
 
-        if not (network_id := config.get('RD_NETWORK_ID')):
+        if not (network_id := config.get("RD_NETWORK_ID")):
             raise KeyError("Config necessary!")
 
-        if (default_timeout := config.get('RD_DEFAULT_TIMEOUT')):
+        if (default_timeout := config.get("RD_DEFAULT_TIMEOUT")) :
             default_timeout = parse_to_timedelta(default_timeout)
 
-        default_amount = config.get('RD_DEFAULT_AMOUNT')
+        default_amount = config.get("RD_DEFAULT_AMOUNT")
         return cls(
             receiver_address=receiver_address,
             token_address=token_address,
             token_decimals=int(token_decimals),
             default_timeout=default_timeout,
             default_amount=float(default_amount),
-            network_id=NetworkId(int(network_id))
+            network_id=NetworkId(int(network_id)),
         )
 
 
@@ -125,16 +138,15 @@ def parse_to_timedelta(input_str):
 
 
 class RaidenNode:
-
     def __init__(self, endpoint, token_address):
-        self._base_url = endpoint + '/api/v1'
+        self._base_url = endpoint + "/api/v1"
         self.token_address = token_address
         self.address = self._get_raiden_address()
 
     def _get_raiden_address(self):
         response = requests.get(f"{self._base_url}/address")
         # TODO error handling
-        return response.json()['our_address']
+        return response.json()["our_address"]
 
     def get_payments(self):
         return list(self.iter_payments())
@@ -143,14 +155,14 @@ class RaidenNode:
         response = requests.get(f"{self._base_url}/payments/{self.token_address}")
         # TODO error handling etc for payment in response.json():
         for payment in response.json():
-            if payment['event'] == "EventPaymentReceivedSuccess":
+            if payment["event"] == "EventPaymentReceivedSuccess":
                 yield payment
 
     @classmethod
     def from_config(cls, config):
-        if not (endpoint := config.get('RD_API_ENDPOINT')):
+        if not (endpoint := config.get("RD_API_ENDPOINT")):
             raise KeyError("Config required")
-        if not (token_address := config.get('RD_TOKEN_ADDRESS')):
+        if not (token_address := config.get("RD_TOKEN_ADDRESS")):
             raise KeyError("Config required")
         return cls(endpoint, token_address)
 
@@ -174,9 +186,9 @@ class RaidenPaywall(object):
     export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
     """
 
-    amount = register_ctx_proxy('raiden_paywall_amount', 0.)
-    _claimed_payment = register_ctx_proxy('raiden_paywall_claimed_paymed', False)
-    _preview = register_ctx_proxy('raiden_paywall_preview', None)
+    amount = register_ctx_proxy("raiden_paywall_amount", 0.0)
+    _claimed_payment = register_ctx_proxy("raiden_paywall_claimed_paymed", False)
+    _preview = register_ctx_proxy("raiden_paywall_preview", None)
 
     def __init__(self, app=None):
         self.app = app
@@ -186,7 +198,7 @@ class RaidenPaywall(object):
     def init_app(self, app):
         init_db()
 
-        app.config.from_envvar('RAIDEN_PAYWALL_SETTINGS')
+        app.config.from_envvar("RAIDEN_PAYWALL_SETTINGS")
         # TODO handling of when receiver address is specified in config
         # (e.g. consistency checking with DB and raiden node)
         raiden = RaidenNode.from_config(app.config)
@@ -202,7 +214,6 @@ class RaidenPaywall(object):
         app.teardown_appcontext(self.teardown)
         app.after_request(self._modify_response)
 
-
     def teardown(self, exception):
         db_session.remove()
 
@@ -212,16 +223,26 @@ class RaidenPaywall(object):
                 return self.make_payment_response(preview=self._preview)
         return response
 
-    def preview(self, preview):
+    def preview(self, preview: Any) -> Any:
         self._preview = preview
         return preview
 
-    def check_payment(self):
-        if self.amount == 0.:
+    def check_payment(self) -> bool:
+        """
+        Returns:
+            A buffered writable file descriptor
+        """
+        if self.amount == 0.0:
             return True
-        payment_id = request.headers.get('X-Raiden-Payment-Id')
+        payment_id = request.headers.get("X-Raiden-Payment-Id")
         if payment_id:
-            payment = Payment.create_filter(identifier=int(payment_id), state=PaymentState.PAID).with_for_update(of=Payment).one_or_none()
+            payment = (
+                Payment.create_filter(
+                    identifier=int(payment_id), state=PaymentState.PAID
+                )
+                .with_for_update(of=Payment)
+                .one_or_none()
+            )
             if payment:
                 payment.claimed = True
                 db_session().commit()
@@ -234,20 +255,29 @@ class RaidenPaywall(object):
         return make_response(self._make_payment_response(preview=preview))
 
     def _make_payment_response(self, preview=None):
-        payment_id = request.headers.get('X-Raiden-Payment-Id')
+        payment_id = request.headers.get("X-Raiden-Payment-Id")
         if payment_id:
             log.info(f"Found id in header: {payment_id}")
             payment_id = int(payment_id)
-            payment = Payment.create_filter(identifier=payment_id, state=PaymentState.PAID).one_or_none()
+            payment = Payment.create_filter(
+                identifier=payment_id, state=PaymentState.PAID
+            ).one_or_none()
             if payment:
-                assert False, 'The payment should have been claimed in this request'
-            payment = Payment.create_filter(identifier=payment_id, state=PaymentState.AWAITED).one_or_none()
+                assert False, "The payment should have been claimed in this request"
+            payment = Payment.create_filter(
+                identifier=payment_id, state=PaymentState.AWAITED
+            ).one_or_none()
             if payment:
                 log.info(f"Payment not redeemable yet: {payment}")
                 return jsonify(payment=payment, preview=preview), 401
             else:
                 return "Specified X-Raiden-Payment-Id is not awaited.", 404
-        payment = await_payment(self.config.receiver, self.config.token, self.amount, self.config.default_timeout)
+        payment = await_payment(
+            self.config.receiver,
+            self.config.token,
+            self.amount,
+            self.config.default_timeout,
+        )
         if payment_id:
             return jsonify(payment=payment, preview=preview), 401
         else:
@@ -255,18 +285,19 @@ class RaidenPaywall(object):
             return jsonify(payment=payment, preview=preview), 402
 
 
-def await_payment(receiver, token, amount, timeout):
-
+def await_payment(
+    receiver: Participant, token: Token, amount: float, timeout: datetime.timedelta
+) -> "Payment":
     try:
         tries = 0
         while tries <= 5:
             one_awaited = True
             while one_awaited:
                 # FIXME 2**64 is within bruteforce reach! Fix raiden ids!
-                # FIXME SQL BigInt is a signed int64! for now, we constrain 
-                # the ids to be smaller in the positive range, but this 
+                # FIXME SQL BigInt is a signed int64! for now, we constrain
+                # the ids to be smaller in the positive range, but this
                 # decreases collision resistance significantly even further
-                payment_id = random.randint(0, 2**63 - 1)
+                payment_id = random.randint(0, 2 ** 63 - 1)
                 filter_ = Payment.create_filter(payment_id, PaymentState.AWAITED)
                 one_awaited = filter_.one_or_none()
                 # FIXME if all possible payment_id's are in state AWAITED,
@@ -274,8 +305,14 @@ def await_payment(receiver, token, amount, timeout):
                 # Probably this is what we want though ...?
 
             session = db_session()
-            subqry = session.query(func.max(Payment.counter)).filter(Payment.identifier == payment_id)
-            qry = session.query(Payment).filter(Payment.identifier == payment_id, Payment.counter == subqry).one_or_none()
+            subqry = session.query(func.max(Payment.counter)).filter(
+                Payment.identifier == payment_id
+            )
+            qry = (
+                session.query(Payment)
+                .filter(Payment.identifier == payment_id, Payment.counter == subqry)
+                .one_or_none()
+            )
 
             if qry:
                 counter = qry.counter + 1
@@ -288,7 +325,7 @@ def await_payment(receiver, token, amount, timeout):
                 amount=amount,
                 timeout=datetime.datetime.now() + timeout,
                 receiver=receiver,
-                token=token
+                token=token,
             )
 
             session.add(payment)
@@ -298,4 +335,3 @@ def await_payment(receiver, token, amount, timeout):
         tries += 1
         if tries == 5:
             raise e
-

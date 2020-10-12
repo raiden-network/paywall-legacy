@@ -1,15 +1,13 @@
 import asyncio
 import datetime
-from enum import Enum
-from typing import Optional, Tuple, Union
-from queue import Queue
-from dataclasses import dataclass
-
 from contextlib import contextmanager
+from dataclasses import dataclass
+from enum import Enum
+from queue import Queue
+from typing import Optional, Tuple, Union
 
-import structlog
 import aiohttp
-
+import structlog
 from raiden.api.v1.encoding import PaymentSchema
 
 LOG = structlog.get_logger()
@@ -30,7 +28,7 @@ class RaidenPaymentProxy:
     _payment_schema_v1 = PaymentSchema()
 
     def __init__(self, host, port, token_address, poll_interval=0.5):
-        self._base_url = f"{host}:{port}" 
+        self._base_url = f"{host}:{port}"
         self._payment_awaits = {}
         self._poll_interval = poll_interval
         self._poll_task = None
@@ -66,7 +64,9 @@ class RaidenPaymentProxy:
             while True:
                 payments = await self._poll_payments()
                 for payment in payments:
-                    payment_await_event = self._payment_awaits.get(payment["identifier"])
+                    payment_await_event = self._payment_awaits.get(
+                        payment["identifier"]
+                    )
                     if payment_await_event:
                         payment_await_event.set(payment)
                 await asyncio.sleep(self._poll_interval)
@@ -74,7 +74,7 @@ class RaidenPaymentProxy:
             LOG.debug("Polling was cancelled")
 
     async def _stop(self):
-        # TODO should be called when the class is teared down 
+        # TODO should be called when the class is teared down
         # (or when the run loop quits?)
         await self._session.close()
         # TODO await poll task here?
@@ -95,14 +95,18 @@ class RaidenPaymentProxy:
             self._poll_task.cancel()
 
     # TODO types
-    async def await_payment(self, identifier, expiration_time: datetime.datetime) -> Tuple[PaymentStatus, Union['Payment', 'TODO']]:
+    async def await_payment(
+        self, identifier, expiration_time: datetime.datetime
+    ) -> Tuple[PaymentStatus, Union["Payment", "TODO"]]:
         if self._payment_awaits.get(identifier):
             LOG.debug("Payment already awaited", identifier=identifier)
             return PaymentStatus.ERROR, None
 
         with self._create_payment_event(identifier) as event:
             try:
-                await asyncio.wait_for(event.wait(), timeout=seconds_until(expiration_time))
+                await asyncio.wait_for(
+                    event.wait(), timeout=seconds_until(expiration_time)
+                )
                 result = event.get()
                 return PaymentStatus.SUCCESS, result
             except asyncio.TimeoutError:
@@ -110,4 +114,3 @@ class RaidenPaymentProxy:
             except asyncio.CancelledError:
                 raise NotImplementedError("Cancelling events is not implemented yet")
                 return PaymentStatus.ERROR, None
-
