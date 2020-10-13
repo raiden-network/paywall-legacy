@@ -2,7 +2,7 @@
 title: Raiden Pulse #11: News from March and April
 description: Overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in March and April.
 date: 2020-05-08
-imageUrl: https://miro.medium.com/max/700/1*Ky5TKwEBt55-NlY7kBhppA.png
+imageUrl: https://miro.medium.com/max/1044/1*Ky5TKwEBt55-NlY7kBhppA.png
 preview: >
   Yet another two months have passed by and it’s time for the bi-monthly summary of all things Raiden: overall development progress, product updates, event participation and all the other stuff that we’ve been up to in March and April.
   While big parts of the World, as we know it, have been on hold for the last two months, the Raiden team has continued to work towards the Alderaan release.

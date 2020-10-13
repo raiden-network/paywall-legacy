@@ -2,7 +2,7 @@
 title: Raiden Pulse #10: News from January and February
 description: Overall development progress, product updates, (virtual) event participation and all the other stuff that we’ve been up to in January and February.
 date: 2020-03-09
-imageUrl: https://miro.medium.com/max/700/1*YoWpq83tOhDuqCSptoHwqA.png 
+imageUrl: https://miro.medium.com/max/1044/1*YoWpq83tOhDuqCSptoHwqA.png 
 preview: >
   It is time for our bi-monthly summary of all things Raiden: overall development progress, product updates, event participation and all the other stuff that we’ve been up to in January and February.
   We hope you all had a good start to the new decade. Let’s dig into what’s new with Raiden!
