@@ -1,11 +1,9 @@
 import requests
-
 from raiden.api.v1.encoding import EventPaymentReceivedSuccessSchema
 
-from raiden_paywall.models import Payment, PaymentState
 from raiden_paywall.database import db_session
+from raiden_paywall.models import Payment, PaymentState
 from raiden_paywall.utils import to_absolute_amount
-
 
 PaymentReceivedSchema = EventPaymentReceivedSuccessSchema()
 
@@ -13,7 +11,7 @@ PaymentReceivedSchema = EventPaymentReceivedSuccessSchema()
 def database_update_payments(raiden):
     # Data cannot be passed as a param because it will be prefetched
     # by the thread and reused.
-        # TODO get raiden from app context?
+    # TODO get raiden from app context?
     session = db_session()
     try:
         # TODO check wether this locks the whole table and find a solution where we

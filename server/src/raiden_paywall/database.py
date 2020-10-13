@@ -24,4 +24,3 @@ def init_db():
     import raiden_paywall.models
 
     Base.metadata.create_all(bind=engine)
-

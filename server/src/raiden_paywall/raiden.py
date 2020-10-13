@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import requests 
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
@@ -8,6 +7,7 @@ from queue import Queue
 from typing import Optional, Tuple, Union
 
 import aiohttp
+import requests
 import structlog
 from raiden.api.v1.encoding import PaymentSchema
 
@@ -42,4 +42,3 @@ class RaidenNode:
         if not (token_address := config.get("RD_TOKEN_ADDRESS")):
             raise KeyError("Config required")
         return cls(endpoint, token_address)
-

@@ -1,10 +1,10 @@
 import dataclasses
-from decimal import Decimal
 import datetime
 import glob
 import hashlib
 import os
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Optional
 
 import markdown2
@@ -67,7 +67,7 @@ def get_markdown_assets(search_path):
 
 # For now, use global dict
 ENDPOINTS = {}  # UUID -> Endpoint
-BASE_PRICE = Decimal('0.0000001')
+BASE_PRICE = Decimal("0.0000001")
 
 
 app = Flask(__name__)
@@ -97,9 +97,7 @@ def overview():
         preview["path"] = f"/articles/{id_}"
         overview.append(preview)
     sorted_overview = sorted(
-        overview, 
-        key=lambda endpoint: endpoint["date"], 
-        reverse=True
+        overview, key=lambda endpoint: endpoint["date"], reverse=True
     )
     return jsonify(sorted_overview)
 

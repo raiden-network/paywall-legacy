@@ -2,8 +2,8 @@ import datetime
 import json
 import logging
 import random
-from decimal import Decimal, getcontext, ROUND_UP
 from dataclasses import dataclass
+from decimal import ROUND_UP, Decimal, getcontext
 from functools import wraps
 from typing import Any, Optional
 
@@ -158,7 +158,7 @@ class RaidenPaywall(object):
     export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
     """
 
-    amount = register_ctx_proxy("raiden_paywall_amount", Decimal('0.'))
+    amount = register_ctx_proxy("raiden_paywall_amount", Decimal("0."))
     _claimed_payment = register_ctx_proxy("raiden_paywall_claimed_paymed", False)
     _preview = register_ctx_proxy("raiden_paywall_preview", None)
 
@@ -200,7 +200,7 @@ class RaidenPaywall(object):
         Returns:
             A buffered writable file descriptor
         """
-        if self.amount == Decimal('0.'):
+        if self.amount == Decimal("0."):
             return True
         payment_id = request.headers.get("X-Raiden-Payment-Id")
         if payment_id:
@@ -287,7 +287,9 @@ def await_payment(
             else:
                 counter = 0
 
-            rounded_amount = amount.quantize(Decimal(f'10e-{str(token.decimals)}'), rounding=ROUND_UP)
+            rounded_amount = amount.quantize(
+                Decimal(f"10e-{str(token.decimals)}"), rounding=ROUND_UP
+            )
             payment = Payment(
                 identifier=int(payment_id),
                 counter=counter,
