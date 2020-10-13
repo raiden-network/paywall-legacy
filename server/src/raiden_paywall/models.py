@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     PickleType,
     String,
+    Text,
 )
 from sqlalchemy.orm import backref, relationship
 
@@ -79,7 +80,7 @@ class Payment(Base):
 
     id: str
     timeout: DateTime
-    amount: float
+    amount: str
     token: Token
     receiver: Participant
 
@@ -87,7 +88,7 @@ class Payment(Base):
     identifier = Column(BigInteger, primary_key=True, unique=False, autoincrement=False)
     counter = Column(Integer, primary_key=True, unique=False)
     timeout = Column(DateTime(), nullable=False)
-    amount = Column(Float(), nullable=False)
+    amount = Column(Text, nullable=False)
     receiver_address = Column(String(42), ForeignKey("participant.address"))
     receiver = relationship("Participant", foreign_keys=[receiver_address])
     sender_address = Column(String(42), ForeignKey("participant.address"))

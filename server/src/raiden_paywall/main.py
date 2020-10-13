@@ -1,4 +1,5 @@
 import dataclasses
+from decimal import Decimal
 import datetime
 import glob
 import hashlib
@@ -66,7 +67,7 @@ def get_markdown_assets(search_path):
 
 # For now, use global dict
 ENDPOINTS = {}  # UUID -> Endpoint
-BASE_PRICE = 0.0000001
+BASE_PRICE = Decimal('0.0000001')
 
 
 app = Flask(__name__)
@@ -109,9 +110,8 @@ def raiden_pulse(uuid):
     if not article:
         abort(404)
 
-    # paywall.amount += len(article.content.encode("utf-8")) * BASE_PRICE
-    paywall.amount = 0.000001
+    paywall.amount += len(article.content.encode("utf-8")) * BASE_PRICE
+
     if not paywall.check_payment():
         return paywall.preview(article.preview_dict)
     return article.content
-

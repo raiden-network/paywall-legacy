@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import random
+from decimal import Decimal, getcontext, ROUND_UP
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Optional
@@ -123,7 +124,7 @@ class PaymentConfig:
             token_address=token_address,
             token_decimals=int(token_decimals),
             default_timeout=default_timeout,
-            default_amount=float(default_amount),
+            default_amount=Decimal(default_amount),
             network_id=NetworkId(int(network_id)),
         )
 
@@ -157,7 +158,7 @@ class RaidenPaywall(object):
     export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
     """
 
-    amount = register_ctx_proxy("raiden_paywall_amount", 0.0)
+    amount = register_ctx_proxy("raiden_paywall_amount", Decimal('0.'))
     _claimed_payment = register_ctx_proxy("raiden_paywall_claimed_paymed", False)
     _preview = register_ctx_proxy("raiden_paywall_preview", None)
 
@@ -199,7 +200,7 @@ class RaidenPaywall(object):
         Returns:
             A buffered writable file descriptor
         """
-        if self.amount == 0.0:
+        if self.amount == Decimal('0.'):
             return True
         payment_id = request.headers.get("X-Raiden-Payment-Id")
         if payment_id:
@@ -253,7 +254,7 @@ class RaidenPaywall(object):
 
 
 def await_payment(
-    receiver: Participant, token: Token, amount: float, timeout: datetime.timedelta
+    receiver: Participant, token: Token, amount: Decimal, timeout: datetime.timedelta
 ) -> "Payment":
     try:
         tries = 0
@@ -286,10 +287,11 @@ def await_payment(
             else:
                 counter = 0
 
+            rounded_amount = amount.quantize(Decimal(f'10e-{str(token.decimals)}'), rounding=ROUND_UP)
             payment = Payment(
                 identifier=int(payment_id),
                 counter=counter,
-                amount=amount,
+                amount=str(rounded_amount),
                 timeout=datetime.datetime.now() + timeout,
                 receiver=receiver,
                 token=token,
