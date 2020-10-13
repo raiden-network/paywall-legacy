@@ -1,7 +1,9 @@
 <template>
   <div class="page-wrapper">
     <header class="header">
-      <span class="header__logo"> Raiden Pulse </span>
+      <router-link class="header__logo header__link" :to="{ name: 'home' }">
+        Raiden Pulse
+      </router-link>
       <div class="header__links-section">
         <a
           class="header__link"
@@ -57,9 +59,12 @@ export default class AppHeader extends Vue {}
     letter-spacing: -0.04em;
   }
 
-  &__link {
+  &__links-section {
     font-size: 16px;
     line-height: 21px;
+  }
+
+  &__link {
     color: $black;
     text-decoration: none;
 
