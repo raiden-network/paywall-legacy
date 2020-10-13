@@ -37,8 +37,16 @@
         </a>
       </template>
       <template v-else-if="timeout">
-        The Raiden payment timed out. Please reload the page and make the
-        required payment.
+        <img
+          class="paywall__icon"
+          alt="Error icon"
+          src="../../assets/icons/error.svg"
+        />
+        <div>
+          The Raiden payment timed out. Please reload the page and make the
+          required payment.
+        </div>
+        <button class="paywall__button" @click="$router.go()">Reload</button>
       </template>
     </div>
   </BlockUI>
@@ -168,6 +176,8 @@ export default class RaidenPaywall extends Vue {
     font-weight: 500;
     color: #000000;
     text-decoration: none;
+    border: none;
+    cursor: pointer;
     background-color: #44ddff;
 
     &:hover {
