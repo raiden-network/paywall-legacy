@@ -38,28 +38,37 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Article } from '../model/types';
 
-@Component
+@Component<PaywalledArticle>({
+  watch: {
+    '$route.params.id': function () {
+      this.loadArticle();
+    },
+  },
+})
 export default class PaywalledArticle extends Vue {
   article: Article | null = null;
   content = '';
 
   async mounted() {
+    this.loadArticle();
+  }
+
+  private async loadArticle() {
     const indexResponse = await this.$http.get('http://localhost:5000/');
     const filteredArticles = indexResponse.data.filter(
       (article: Article) => article.id === this.$route.params.id,
     );
     if (filteredArticles.length === 0) {
       this.$router.replace('/');
+      return;
     }
     this.article = filteredArticles[0];
 
     const articleResponse = await this.$http.get(
-      `http://localhost:5000/articles/${this.article?.id}`,
+      `http://localhost:5000${this.article!.path}`,
     );
     this.content = articleResponse.data;
   }
-
-  // TODO refactor to watch for route param changes
 }
 </script>
 
