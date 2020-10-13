@@ -95,7 +95,12 @@ def overview():
         assert id_ == endpoint.id
         preview["path"] = f"/articles/{id_}"
         overview.append(preview)
-    return jsonify(overview)
+    sorted_overview = sorted(
+        overview, 
+        key=lambda endpoint: endpoint["date"], 
+        reverse=True
+    )
+    return jsonify(sorted_overview)
 
 
 @app.route("/articles/<uuid>")
