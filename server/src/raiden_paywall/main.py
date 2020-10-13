@@ -109,39 +109,9 @@ def raiden_pulse(uuid):
     if not article:
         abort(404)
 
-    paywall.amount += len(article.content.encode("utf-8")) * BASE_PRICE
+    # paywall.amount += len(article.content.encode("utf-8")) * BASE_PRICE
+    paywall.amount = 0.000001
     if not paywall.check_payment():
         return paywall.preview(article.preview_dict)
     return article.content
 
-
-@app.route("/compute/<computations>")
-def get_expensive_stuff(computations):
-    # here we could observe the request and calculate the amount to pay based on request data
-    computations = int(computations)
-    # this is the base amount!
-    paywall.amount += 0.0001
-
-    # now we also add dynamic pricing based on the request param!
-    paywall.amount += 0.000001 * computations
-
-    # NOTE: since there is no strict association between a specific request
-    # (within a certain user session), the amount should always be deterministic
-    # for a specific combination of endpoint/request parameters!
-    # Otherwise the user will make a request, pay the required amount,
-    # When upon repeating the exact same request, only with an added X-Raiden-Payment-Id
-    # the amount increases, the resource will not be unlocked!
-
-    # We want to be able to have control over when the paywall is checked.
-    if not paywall.check_payment():
-        # return paywall.preview(None)
-        return paywall.preview(
-            f"If you pay, this would compute {computations} rounds of computations!"
-        )
-    # Because then we could price heavy computation, before
-    # actually having to do the compuation
-    for _ in range(computations):
-        pr = 213123
-        pr * pr
-        pr = pr + 1
-    return f"Thank you for paying! Here is the result of your computation: {pr}"

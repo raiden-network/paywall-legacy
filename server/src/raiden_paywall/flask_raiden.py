@@ -25,8 +25,9 @@ from pytimeparse import parse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.expression import func
 
-from raiden_paywall.database import db_session, init_db, start_raiden_db_thread
+from raiden_paywall.database import db_session, init_db
 from raiden_paywall.models import NetworkId, Participant, Payment, PaymentState, Token
+from raiden_paywall.raiden import RaidenNode
 
 root = logging.getLogger()
 root.addHandler(default_handler)
@@ -137,36 +138,6 @@ def parse_to_timedelta(input_str):
     return None
 
 
-class RaidenNode:
-    def __init__(self, endpoint, token_address):
-        self._base_url = endpoint + "/api/v1"
-        self.token_address = token_address
-        self.address = self._get_raiden_address()
-
-    def _get_raiden_address(self):
-        response = requests.get(f"{self._base_url}/address")
-        # TODO error handling
-        return response.json()["our_address"]
-
-    def get_payments(self):
-        return list(self.iter_payments())
-
-    def iter_payments(self):
-        response = requests.get(f"{self._base_url}/payments/{self.token_address}")
-        # TODO error handling etc for payment in response.json():
-        for payment in response.json():
-            if payment["event"] == "EventPaymentReceivedSuccess":
-                yield payment
-
-    @classmethod
-    def from_config(cls, config):
-        if not (endpoint := config.get("RD_API_ENDPOINT")):
-            raise KeyError("Config required")
-        if not (token_address := config.get("RD_TOKEN_ADDRESS")):
-            raise KeyError("Config required")
-        return cls(endpoint, token_address)
-
-
 class RaidenPaywall(object):
     """
     Expects the following flask config arguments, exemplary:
@@ -206,10 +177,6 @@ class RaidenPaywall(object):
 
         self.config = PaymentConfig.from_config(app.config)
         self.config.init_database()
-
-        # TODO make the thread stop when the flask server stops,
-        # in order to gracfully handle the db connection
-        self._raiden_thread = start_raiden_db_thread(raiden)
 
         app.teardown_appcontext(self.teardown)
         app.after_request(self._modify_response)
