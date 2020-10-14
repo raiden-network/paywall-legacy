@@ -146,6 +146,10 @@ export default class Home extends Vue {
   width: 32%;
   margin-top: 24px;
 
+  @media screen and (max-width: 599px) {
+    width: 100%;
+  }
+
   &--highlighted {
     width: 100%;
     margin-top: 48px;
@@ -154,6 +158,11 @@ export default class Home extends Vue {
     justify-content: space-between;
     align-content: flex-start;
     align-items: flex-start;
+
+    @media screen and (max-width: 839px) {
+      display: flex;
+      flex-direction: column;
+    }
   }
 
   &__image-link {
@@ -162,6 +171,10 @@ export default class Home extends Vue {
 
   &--highlighted &__image-link {
     width: 66%;
+
+    @media screen and (max-width: 839px) {
+      width: 100%;
+    }
   }
 
   &__image {
@@ -181,6 +194,10 @@ export default class Home extends Vue {
 
   &--highlighted &__content {
     width: 32%;
+
+    @media screen and (max-width: 839px) {
+      width: 100%;
+    }
   }
 
   &__title {
