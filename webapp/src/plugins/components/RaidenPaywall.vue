@@ -102,6 +102,7 @@ export default class RaidenPaywall extends Vue {
   private handlePayment(payment: RaidenPaymentExternal): void {
     switch (payment.state) {
       case PaymentState.REQUESTED:
+        this.$emit('preview', this.$paywall.current_preview);
         this.raidenPayment = payment;
         break;
       case PaymentState.SUCCESS:

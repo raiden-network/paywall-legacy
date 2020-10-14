@@ -130,51 +130,50 @@ export class RaidenPaywallHandler {
   }
 
   private async _handle_response_error(error: AxiosError): Promise<any> {
-    if (error.response) {
-      if (is_raiden_payment_required(error)) {
-        const {
-          payment,
-          preview,
-        }: {
-          payment: RaidenPayment;
-          preview: RaidenPreview;
-        } = error.response.data;
-        this.callback(this.add_state(payment, PaymentState.REQUESTED));
-        this.current_preview = preview;
-        error.config.headers['X-Raiden-Payment-Id'] = payment.id;
-        let last_error = undefined;
-        const started_time = new Date();
-        // TODO introduce a sync barrier here, that blocks until
-        // a currently 'processed' payment is finished
-        let num_requests = 0;
-        do {
-          try {
-            let response = await this.axios(error.config);
-            this.callback(this.add_state(payment, PaymentState.SUCCESS));
-            return response;
-          } catch (error) {
-            last_error = error;
-            if (error.response?.status === 401) {
-              num_requests++;
-              if (num_requests == 1) {
-                await delay(this._pollInitialWaitTime);
-              } else {
-                await delay(this._pollInterval);
-              }
-              continue;
-            } else {
-              this.callback(this.add_state(payment, PaymentState.FAILED));
-              return Promise.reject(error);
-            }
-          }
-        } while (
-          !this.poll_timeout_reached(started_time, new Date(payment.timeout))
-        );
-        this.callback(this.add_state(payment, PaymentState.TIMEOUT));
-        return Promise.reject(last_error);
-      }
+    if (!(error.response && is_raiden_payment_required(error))) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    const {
+      payment,
+      preview,
+    }: {
+      payment: RaidenPayment;
+      preview: RaidenPreview;
+    } = error.response.data;
+    this.current_preview = preview;
+    this.callback(this.add_state(payment, PaymentState.REQUESTED));
+    error.config.headers['X-Raiden-Payment-Id'] = payment.id;
+    let last_error = undefined;
+    const started_time = new Date();
+    // TODO introduce a sync barrier here, that blocks until
+    // a currently 'processed' payment is finished
+    let num_requests = 0;
+    do {
+      try {
+        let response = await this.axios(error.config);
+        this.callback(this.add_state(payment, PaymentState.SUCCESS));
+        return response;
+      } catch (error) {
+        last_error = error;
+        if (error.response?.status === 401) {
+          num_requests++;
+          if (num_requests == 1) {
+            await delay(this._pollInitialWaitTime);
+          } else {
+            await delay(this._pollInterval);
+          }
+          continue;
+        } else {
+          this.callback(this.add_state(payment, PaymentState.FAILED));
+          return Promise.reject(error);
+        }
+      }
+    } while (
+      !this.poll_timeout_reached(started_time, new Date(payment.timeout))
+    );
+    this.callback(this.add_state(payment, PaymentState.TIMEOUT));
+    return Promise.reject(last_error);
   }
 }
 

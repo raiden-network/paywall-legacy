@@ -5,5 +5,5 @@ export interface Article {
   readonly preview: string;
   readonly date: string;
   readonly image_url: string;
-  readonly path: string;
+  readonly path?: string;
 }

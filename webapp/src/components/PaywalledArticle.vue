@@ -30,6 +30,7 @@
 
     <RaidenPaywall
       :message="'Please make a Raiden payment to read this article'"
+      @preview="article = $event"
     />
   </div>
 </template>
@@ -54,20 +55,16 @@ export default class PaywalledArticle extends Vue {
   }
 
   private async loadArticle() {
-    const indexResponse = await this.$http.get('http://localhost:5000/');
-    const filteredArticles = indexResponse.data.filter(
-      (article: Article) => article.id === this.$route.params.id,
-    );
-    if (filteredArticles.length === 0) {
-      this.$router.replace('/');
-      return;
+    try {
+      const articleResponse = await this.$http.get(
+        `http://localhost:5000/articles/${this.$route.params.id}`,
+      );
+      this.content = articleResponse.data;
+    } catch (error) {
+      if (error.response.status === 404) {
+        this.$router.replace('/');
+      }
     }
-    this.article = filteredArticles[0];
-
-    const articleResponse = await this.$http.get(
-      `http://localhost:5000${this.article!.path}`,
-    );
-    this.content = articleResponse.data;
   }
 }
 </script>
