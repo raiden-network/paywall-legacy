@@ -7,10 +7,6 @@ import { Address } from 'raiden-ts';
 import RaidenPaywall from './components/RaidenPaywall.vue';
 import BlockUI from 'vue-blockui';
 
-//function is_raiden_rejected(error: AxiosError): boolean{
-//return (error.response?.status === 401 && error.response?.data?.identifier);
-//}
-
 function isRaidenPaymentRequired(
   error: AxiosError,
 ): error is AxiosError<PaywallResponse> {
@@ -124,10 +120,10 @@ export class RaidenPaywallHandler {
     startPollTime: Date,
     paymentTimeout: Date,
   ): boolean {
-    const timeNow = new Date().getTime().valueOf();
+    const timeNow = new Date().getTime();
     return (
-      timeNow > paymentTimeout.getTime().valueOf() ||
-      timeNow - startPollTime.getTime().valueOf() > this._pollMaxWaitTime
+      timeNow > paymentTimeout.getTime() ||
+      timeNow - startPollTime.getTime() > this._pollMaxWaitTime
     );
   }
 
@@ -170,11 +166,6 @@ export class RaidenPaywallHandler {
     return Promise.reject(lastError);
   }
 }
-
-// Timedeltas:
-//var eventStartTime = new Date(event.startTime);
-//var eventEndTime = new Date(event.endTime);
-//var duration = eventEndTime.valueOf() - eventStartTime.valueOf();
 
 export interface RaidenPaywallOptions {
   raidenUrl: URL;
