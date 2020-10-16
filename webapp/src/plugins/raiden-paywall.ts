@@ -11,8 +11,10 @@ import BlockUI from 'vue-blockui';
 //return (error.response?.status === 401 && error.response?.data?.identifier);
 //}
 
-function is_raiden_payment_required(error: AxiosError): boolean {
-  return error.response?.status === 402 && error.response?.data?.payment.id;
+function is_raiden_payment_required(
+  error: AxiosError,
+): error is AxiosError<PaywallResponse> {
+  return error.response?.status === 402 && error.response?.data?.payment?.id;
 }
 
 export enum PaymentState {
@@ -42,18 +44,21 @@ interface RaidenPreview {
   title: string;
 }
 
-interface RaidenPayment {
+interface RaidenPaymentResponse {
   token: Token;
   receiver: Participant;
   id: string;
-  // TODO use string and parse number from that?
-  amount: number;
+  amount: string;
   claimed: boolean;
   timeout: Date;
 }
 
-// TODO rename this one to RaidenPayment
-export interface RaidenPaymentExternal extends RaidenPayment {
+interface PaywallResponse {
+  payment: RaidenPaymentResponse;
+  preview: RaidenPreview;
+}
+
+export interface RaidenPayment extends RaidenPaymentResponse {
   state: PaymentState;
   url: URL;
   id: string;
@@ -69,7 +74,7 @@ export class RaidenPaywallHandler {
   // TODO change type
   public current_preview: RaidenPreview | undefined;
   private raiden_dapp_url: URL;
-  private _callbacks: { (payment: RaidenPaymentExternal): void }[];
+  private _callbacks: { (payment: RaidenPayment): void }[];
   private _pollInitialWaitTime: number;
   private _pollMaxWaitTime: number;
   private _pollInterval: number;
@@ -82,7 +87,6 @@ export class RaidenPaywallHandler {
     this._pollInterval = options.pollInterval || 2_000;
     this._pollMaxWaitTime = options.pollMaxWaitTime || 120_000;
     this._pollInitialWaitTime = options.pollInitialWaitTime || 0;
-    this.current_preview = undefined;
 
     this.axios = axios.create(config);
     this._callbacks = [];
@@ -95,10 +99,10 @@ export class RaidenPaywallHandler {
   }
 
   private add_state(
-    payment: RaidenPayment,
+    payment: RaidenPaymentResponse,
     state: PaymentState,
-  ): RaidenPaymentExternal {
-    let new_payment = payment as RaidenPaymentExternal;
+  ): RaidenPayment {
+    let new_payment = payment as RaidenPayment;
     new_payment.state = state;
     new_payment.id = payment.id;
     new_payment.url = new URL(
@@ -108,13 +112,13 @@ export class RaidenPaywallHandler {
     return new_payment;
   }
 
-  private callback(payment: RaidenPaymentExternal) {
+  private callback(payment: RaidenPayment) {
     this._callbacks.forEach((callback) => {
       callback(payment);
     });
   }
 
-  public register_callback(callback: (payment: RaidenPaymentExternal) => void) {
+  public register_callback(callback: (payment: RaidenPayment) => void) {
     this._callbacks.push(callback);
   }
 
@@ -134,13 +138,7 @@ export class RaidenPaywallHandler {
       return Promise.reject(error);
     }
 
-    const {
-      payment,
-      preview,
-    }: {
-      payment: RaidenPayment;
-      preview: RaidenPreview;
-    } = error.response.data;
+    const { payment, preview } = error.response.data;
     this.current_preview = preview;
     this.callback(this.add_state(payment, PaymentState.REQUESTED));
     error.config.headers['X-Raiden-Payment-Id'] = payment.id;

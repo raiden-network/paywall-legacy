@@ -54,7 +54,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { PaymentState, RaidenPaymentExternal } from '../raiden-paywall';
+import { PaymentState, RaidenPayment } from '../raiden-paywall';
 
 @Component({
   watch: {
@@ -70,7 +70,7 @@ import { PaymentState, RaidenPaymentExternal } from '../raiden-paywall';
 export default class RaidenPaywall extends Vue {
   @Prop() message!: string;
 
-  raidenPayment: RaidenPaymentExternal | null = null;
+  raidenPayment: RaidenPayment | null = null;
 
   created() {
     this.$paywall.register_callback((payment) => this.handlePayment(payment));
@@ -99,7 +99,7 @@ export default class RaidenPaywall extends Vue {
     document.documentElement.style.overflow = 'auto';
   }
 
-  private handlePayment(payment: RaidenPaymentExternal): void {
+  private handlePayment(payment: RaidenPayment): void {
     switch (payment.state) {
       case PaymentState.REQUESTED:
         this.$emit('preview', this.$paywall.current_preview);
