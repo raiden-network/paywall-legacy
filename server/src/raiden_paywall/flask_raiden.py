@@ -28,7 +28,7 @@ from sqlalchemy.sql.expression import func
 
 from raiden_paywall.database import db_session, init_db
 from raiden_paywall.models import NetworkId, Participant, Payment, PaymentState, Token
-from raiden_paywall.raiden import RaidenNode
+from raiden_paywall.raiden_proxy import RaidenNode
 
 root = logging.getLogger()
 root.addHandler(default_handler)
