@@ -106,7 +106,7 @@ export default class Home extends Vue {
   articles: Article[] = [];
 
   async created() {
-    const response = await this.$http.get('http://localhost:5000/');
+    const response = await this.$http.get(`${process.env.VUE_APP_CONTENT_BASE_URL}`);
     this.articles = response.data;
   }
 }

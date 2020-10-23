@@ -2,6 +2,7 @@ FROM node:alpine
 RUN npm install -g pnpm
 WORKDIR .
 COPY . . 
+ARG VUE_APP_CONTENT_BASE_URL
 RUN pnpm install && pnpm run build
 
 FROM flashspys/nginx-static
