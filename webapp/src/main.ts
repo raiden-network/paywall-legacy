@@ -24,7 +24,7 @@ const router = new VueRouter({
 });
 
 const raidenOptions: RaidenPaywallOptions = {
-  raidenUrl: new URL('http://lightclient.raiden.network/staging/'),
+  raidenUrl: new URL(process.env.VUE_APP_LIGHTCLIENT_URL),
   pollInitialWaitTime: 10_000,
   pollInterval: 3_000,
   pollMaxWaitTime: 120_000,
