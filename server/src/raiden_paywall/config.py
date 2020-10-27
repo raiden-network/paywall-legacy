@@ -13,10 +13,8 @@ from flask import Flask
 
 
 def on_starting(server):
-    # FIXME does this have to be global?
     global sched
 
-    # TODO get rid of flask creation here and read config file manually
     # only create to get the config
     app = Flask(__name__)
     app.config.from_envvar("RAIDEN_PAYWALL_SETTINGS")

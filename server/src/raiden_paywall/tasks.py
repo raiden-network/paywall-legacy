@@ -9,13 +9,8 @@ PaymentReceivedSchema = EventPaymentReceivedSuccessSchema()
 
 
 def database_update_payments(raiden):
-    # Data cannot be passed as a param because it will be prefetched
-    # by the thread and reused.
-    # TODO get raiden from app context?
     session = db_session()
     try:
-        # TODO check wether this locks the whole table and find a solution where we
-        # only lock the individual entries while consuming them in an iterator
         awaited = Payment.create_filter(
             identifier=None, state=PaymentState.AWAITED
         ).with_for_update(of=Payment)

@@ -36,8 +36,6 @@ root.addHandler(default_handler)
 log = logging.getLogger("werkzeug")
 
 
-# Typing 
-# TODO refactor typing to submodule
 from typing import Any, Dict, Type, TypeVar, Optional
 from raiden_paywall.database import Base
 
@@ -55,12 +53,6 @@ def get_or_create(model: Type[DatabaseModel], **kwargs: Dict[str, Any]) -> Datab
     :param model: type of the object to be retrieved/created
     :param kwargs: dictionary of initializer arguments for creation / query of the object
     """
-    # FIXME using this and then committing raised a 
-    # sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: participant.address
-
-    # When adding the receiver participant again after a restart.
-    # This indicates that the query is not working properly
-    # and we try to add an already existing Participant instead of 'getting' it
     instance = db_session().query(model).filter_by(**kwargs).one_or_none()
     if instance:
         return instance
@@ -248,8 +240,6 @@ class RaidenPaywall(object):
         init_db()
 
         app.config.from_envvar("RAIDEN_PAYWALL_SETTINGS")
-        # TODO handling of when receiver address is specified in config
-        # (e.g. consistency checking with DB and raiden node)
         raiden = RaidenNode.from_config(app.config)
         app.config["RD_RECEIVER_ADDRESS"] = raiden.address
 
@@ -293,7 +283,6 @@ class RaidenPaywall(object):
                 return self.make_payment_response(preview=self._preview)
         return response
 
-    # TODO type flask response / tuple, int etc (flask view func response)
     def preview(self, preview: Any) -> Any:
         """
         Pass-through method, that also sets the `preview` argument
@@ -383,16 +372,9 @@ def await_payment(
         while tries <= 5:
             one_awaited = True
             while one_awaited:
-                # FIXME 2**64 is within bruteforce reach! Fix raiden ids!
-                # FIXME SQL BigInt is a signed int64! for now, we constrain
-                # the ids to be smaller in the positive range, but this
-                # decreases collision resistance significantly even further
                 payment_id = random.randint(0, 2 ** 63 - 1)
                 filter_ = Payment.create_filter(payment_id, PaymentState.AWAITED)
                 one_awaited = filter_.one_or_none()
-                # FIXME if all possible payment_id's are in state AWAITED,
-                # this blocks/ queries until it finds a free id again.
-                # Probably this is what we want though ...?
 
             session = db_session()
             subqry = session.query(func.max(Payment.counter)).filter(

@@ -24,8 +24,6 @@ class RaidenNode:
 
     def wait_for_raiden_api(self, num_retries=20):
         counter = 0
-        # TODO make this exponential backoff
-        # TODO make ait time config parameter
         while counter < num_retries:
             response = requests.get(f"{self._base_url}/info")
             if response.status_code == 200:
@@ -49,7 +47,6 @@ class RaidenNode:
 
     def iter_payments(self):
         response = requests.get(f"{self._base_url}/payments/{self.token_address}")
-        # TODO error handling etc for payment in response.json():
         for payment in response.json():
             if payment["event"] == "EventPaymentReceivedSuccess":
                 yield payment

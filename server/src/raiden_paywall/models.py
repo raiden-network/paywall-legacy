@@ -46,7 +46,6 @@ class PaymentState(enum.Enum):
 
 
 class NetworkId(enum.IntEnum):
-    # TODO other networks
     GOERLI = 5
 
 
@@ -84,7 +83,6 @@ class Payment(Base):
     token: Token
     receiver: Participant
 
-    # FIXME BigInteger is a SIGNED INT64!
     identifier = Column(BigInteger, primary_key=True, unique=False, autoincrement=False)
     counter = Column(Integer, primary_key=True, unique=False)
     timeout = Column(DateTime(), nullable=False)
