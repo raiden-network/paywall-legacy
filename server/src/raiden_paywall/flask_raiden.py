@@ -36,7 +36,31 @@ root.addHandler(default_handler)
 log = logging.getLogger("werkzeug")
 
 
-def get_or_create(model, **kwargs):
+# Typing 
+# TODO refactor typing to submodule
+from typing import Any, Dict, Type, TypeVar, Optional
+from raiden_paywall.database import Base
+
+from flask import Response
+from typing import TypeVar
+
+DatabaseModel = Base
+
+def get_or_create(model: Type[DatabaseModel], **kwargs: Dict[str, Any]) -> DatabaseModel:
+    """
+    Retrieves the object of type `model` from the database, when all given kwargs
+    match a existing entry. If no entry is found, the object is created and persited
+    to the database.
+
+    :param model: type of the object to be retrieved/created
+    :param kwargs: dictionary of initializer arguments for creation / query of the object
+    """
+    # FIXME using this and then committing raised a 
+    # sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: participant.address
+
+    # When adding the receiver participant again after a restart.
+    # This indicates that the query is not working properly
+    # and we try to add an already existing Participant instead of 'getting' it
     instance = db_session().query(model).filter_by(**kwargs).one_or_none()
     if instance:
         return instance
@@ -46,12 +70,27 @@ def get_or_create(model, **kwargs):
         return instance
 
 
-def prepare_response(response, payment):
+def prepare_response(response: Response, payment: Payment) -> Response:
+    """
+    Injects the `X-Raiden-Payment-Id` in the reponse header to 
+    notify the requester that a payment is expected under the specified
+    Raiden identifier
+
+    :param response: original, unmodified response
+    :param payment: payment that is expected to be paid in order to acces the endpoint
+    """
     response.headers["X-Raiden-Payment-Id"] = payment.identifier
     return response
 
 
-def register_ctx_proxy(name, init_value):
+def register_ctx_proxy(name: str, init_value: Any) -> property:
+    """
+    Registers a property on the current flask app context (_app_ctx_stack.top),
+    to act as a proxy on the class this is called in.
+
+    :param name: proxy attribute name registered on the class
+    :param init_value: initial attribute value
+    """
     def getter(obj):
         ctx = _app_ctx_stack.top
         if ctx is not None:
@@ -82,14 +121,14 @@ class PaymentConfig:
     default_amount: float = 0.0001
 
     @property
-    def token(self):
+    def token(self) -> Token:
         return Token.query.get(self.token_address)
 
     @property
-    def receiver(self):
+    def receiver(self) -> Participant:
         return Participant.query.get(self.receiver_address)
 
-    def init_database(self):
+    def init_database(self) -> None:
         token = get_or_create(
             Token,
             address=self.token_address,
@@ -102,7 +141,7 @@ class PaymentConfig:
         db_session().commit()
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls: Type['PaymentConfig'], config: Dict[str, Any]) -> 'PaymentConfig':
         if not (token_address := config.get("RD_TOKEN_ADDRESS")):
             raise KeyError("Config necessary!")
 
@@ -129,7 +168,34 @@ class PaymentConfig:
         )
 
 
-def parse_to_timedelta(input_str):
+def parse_to_timedelta(input_str: str) -> Optional[datetime.timedelta]:
+    """
+    Will parse an input string to a timedelta.
+    Supported formats e.g. (for more see `https://github.com/wroberts/pytimeparse`):
+
+        >>> timeparse('1:24')
+        84
+        >>> timeparse(':22')
+        22
+        >>> timeparse('1 minute, 24 secs')
+        84
+        >>> timeparse('1m24s')
+        84
+        >>> timeparse('1.2 minutes')
+        72
+        >>> timeparse('1.2 seconds')
+        1.2
+
+        Time expressions can be signed.
+
+        >>> timeparse('- 1 minute')
+        -60
+        >>> timeparse('+ 1 minute')
+        60
+
+    :param input_str: The input string to parse as timedelta
+    """
+
     try:
         if input_str:
             seconds = parse(input_str)
@@ -158,16 +224,27 @@ class RaidenPaywall(object):
     export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
     """
 
-    amount = register_ctx_proxy("raiden_paywall_amount", Decimal("0."))
-    _claimed_payment = register_ctx_proxy("raiden_paywall_claimed_paymed", False)
-    _preview = register_ctx_proxy("raiden_paywall_preview", None)
+    amount: Decimal = register_ctx_proxy("raiden_paywall_amount", init_value=Decimal("0."))
+    _claimed_payment: bool = register_ctx_proxy("raiden_paywall_claimed_paymed", init_value=False)
+    _preview: Optional[Any] = register_ctx_proxy("raiden_paywall_preview", init_value=None)
 
-    def __init__(self, app=None):
+    def __init__(self, app: Optional[Flask] = None) -> None:
         self.app = app
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app: Flask) -> None:
+        """
+        Initializes the Flask app object so that the RaidenPaywall can be used as a
+        flask-extension. Sets the appropriate config parameters from the
+        config file that is read from the `RAIDEN_PAYWALL_SETTINGS` env-var path.
+
+        The Raiden node is queried for it's receiving address.
+        The database is initialised and some actions are registered on the appropriate flask hooks.
+
+        :param app: The pre-initialised flask application
+        """
+
         init_db()
 
         app.config.from_envvar("RAIDEN_PAYWALL_SETTINGS")
@@ -182,21 +259,66 @@ class RaidenPaywall(object):
         app.teardown_appcontext(self.teardown)
         app.after_request(self._modify_response)
 
-    def teardown(self, exception):
+    def teardown(self, exception: Optional[Exception]):
+        """
+        Actions that should be taken when Flask tears down the app-context.
+
+        :param exception: Exception that caused the Flask to tear down the app-context.
+        """
+
         db_session.remove()
 
-    def _modify_response(self, response):
+    def _modify_response(self, response: Response) -> Response:
+        """
+        Action that should be taken right before flask hands over the 
+        processed response to the networking layer.
+
+        If the response is part of a request that is paywalled (an amount is set on 
+        the request context), it is checked wether the payment was paid for and successfully
+        claimed, or wether no preview was set on the request context - resulting in 
+        passing the response through unmodified.
+
+        Otherwise, the reponse is replaced by a response that is signalling the requester 
+        that a raiden payment is required. Additionally, an optional preview is added to the 
+        response.
+
+        :param response: the (unmodified) response as returned e.g. by a view function.
+
+        Returns:
+            A (eventually) modified/replaced original response.
+        """
+
         if self.amount:
             if not self._claimed_payment or self._preview:
                 return self.make_payment_response(preview=self._preview)
         return response
 
+    # TODO type flask response / tuple, int etc (flask view func response)
     def preview(self, preview: Any) -> Any:
+        """
+        Pass-through method, that also sets the `preview` argument
+        on the request context.
+        A call to this method is necessary in order to inject the preview object 
+        in the payment request and respond to a paywalled 
+        request with a preview of the resource.
+
+        Should be called as a passthrough method just before returning e.g. 
+        a view-function:
+
+            @app.route("/some_route")
+            def some_route():`
+                # This would always return a preview with a payment request
+                return paywall.preview("This is a preview")
+
+        :param preview: response value as returned by a flask view-function.
+        """
+
         self._preview = preview
         return preview
 
     def check_payment(self) -> bool:
         """
+
         Returns:
             A buffered writable file descriptor
         """

@@ -29,10 +29,15 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   Installation <installation>
+   User Guide <userguide>
+   Configuration <config>
+   Architecture & Database <database>
+   Module Reference <api/modules>
+
    License <license>
    Authors <authors>
    Changelog <changelog>
-   Module Reference <api/modules>
 
 
 Indices and tables

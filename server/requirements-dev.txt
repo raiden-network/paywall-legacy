@@ -2,4 +2,5 @@
 sphinx-autodoc-typehints==1.11.0
 black==20.8b1
 isort==5.6.3
+alchemyjsonschema==0.6.1
 

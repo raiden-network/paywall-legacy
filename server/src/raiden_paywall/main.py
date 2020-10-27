@@ -66,7 +66,7 @@ def get_markdown_assets(search_path):
 
 
 # For now, use global dict
-ENDPOINTS = {}  # UUID -> Endpoint
+ENDPOINTS = {}  # UID -> Endpoint
 BASE_PRICE = Decimal("0.0000001")
 
 

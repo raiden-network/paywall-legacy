@@ -56,6 +56,28 @@ try:
 except Exception as e:
     print("Running `sphinx-apidoc` failed!\n{}".format(e))
 
+
+import pprint as pp
+from alchemyjsonschema import SchemaFactory
+from alchemyjsonschema import ForeignKeyWalker
+import sys, inspect
+import json
+import pathlib
+
+def export_models():
+    from raiden_paywall import models
+    from raiden_paywall.database import Base
+
+    docs_path = pathlib.Path(__file__).parent.absolute()
+    factory = SchemaFactory(ForeignKeyWalker)
+    output_str = pp.pformat([factory(cls) for cls in Base.__subclasses__()])
+    with open(docs_path / 'schema.json', 'w') as f:
+        # json.dump(output_str, f)
+        f.write(output_str)
+
+
+export_models()
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
