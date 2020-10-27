@@ -22,7 +22,7 @@ docs:
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 
-start-server: export FLASK_APP=${ROOT_DIR}/src/raiden_paywall/main.py
+start-server: export FLASK_APP=${ROOT_DIR}/main.py
 start-server: export RAIDEN_PAYWALL_SETTINGS=${ROOT_DIR}/default.cfg
 start-server:
-	gunicorn -w 4 -b localhost:5000 -c ./src/raiden_paywall/config.py raiden_paywall.main:app
+	gunicorn -w 4 -b localhost:5000 -c ./src/raiden_paywall/config.py main:app
