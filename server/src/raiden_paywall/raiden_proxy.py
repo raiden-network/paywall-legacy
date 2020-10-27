@@ -25,9 +25,10 @@ class RaidenNode:
     def wait_for_raiden_api(self, num_retries=20):
         counter = 0
         while counter < num_retries:
-            response = requests.get(f"{self._base_url}/info")
+            response = requests.get(f"{self._base_url}/status")
             if response.status_code == 200:
-                break
+                if response.json()['status'] == 'ready':
+                    break
             elif response.status_code == 503:
                 LOG.info(f"Raiden Node is starting up, waiting for Raiden API to be available.\
                          Remaining retries: {num_retries - counter + 1}")
