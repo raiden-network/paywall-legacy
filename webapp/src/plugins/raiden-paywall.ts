@@ -65,7 +65,6 @@ function delay(ms: number) {
 
 export class RaidenPaywallHandler {
   public axios: AxiosInstance;
-  // TODO change type
   public currentPreview: RaidenPreview | undefined;
   private _raidenDappUrl: URL;
   private _callbacks: ((payment: RaidenPayment) => void)[];
@@ -138,8 +137,6 @@ export class RaidenPaywallHandler {
     error.config.headers['X-Raiden-Payment-Id'] = payment.id;
     let lastError = undefined;
     const startedTime = new Date();
-    // TODO introduce a sync barrier here, that blocks until
-    // a currently 'processed' payment is finished
     let numRequests = 0;
     do {
       try {
