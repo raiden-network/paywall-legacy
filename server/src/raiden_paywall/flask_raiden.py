@@ -201,19 +201,25 @@ class RaidenPaywall(object):
     """
     Expects the following flask config arguments, exemplary:
 
-            RD_TOKEN_ADDRESS="0xC563388e2e2fdD422166eD5E76971D11eD37A466"
-            RD_TOKEN_DECIMALS='18'
-            RD_NETWORK_ID='5'
-            RD_DEFAULT_TIMEOUT="10mins"
-            RD_DEFAULT_AMOUNT='0.001'
-            RD_API_ENDPOINT='http://localhost:5002'
+    .. highlight:: python
+    .. code-block:: python
+
+        RD_TOKEN_ADDRESS="0xC563388e2e2fdD422166eD5E76971D11eD37A466"
+        RD_TOKEN_DECIMALS='18'
+        RD_NETWORK_ID='5'
+        RD_DEFAULT_TIMEOUT="10mins"
+        RD_DEFAULT_AMOUNT='0.001'
+        RD_API_ENDPOINT='http://localhost:5002'
 
     This should be exposed in a config file,
     and the path of the file is set as environment variable:
 
     e.g.:
 
-    export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
+    .. highlight:: bash
+    .. code-block:: bash
+
+        export RAIDEN_PAYWALL_SETTINGS=/path/to/settings.cfg;
     """
 
     amount: Decimal = register_ctx_proxy("raiden_paywall_amount", init_value=Decimal("0."))
@@ -292,10 +298,15 @@ class RaidenPaywall(object):
         request with a preview of the resource.
 
         Should be called as a passthrough method just before returning e.g. 
+
+
         a view-function:
 
+        .. highlight:: python
+        .. code-block:: python
+
             @app.route("/some_route")
-            def some_route():`
+            def some_route():
                 # This would always return a preview with a payment request
                 return paywall.preview("This is a preview")
 
@@ -307,9 +318,22 @@ class RaidenPaywall(object):
 
     def check_payment(self) -> bool:
         """
+        Will check wether the request provided a `X-Raiden-Payment-Id` Header 
+        that matches a valid Raiden payment in the database that was not used for accessing paywalled 
+        content already.
+        If a valid payment is found, it invalidates the payment and returns True,
+        so an endpoint resource should return the paywalled resource on a successful `check_payment()`:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            @app.route("/some_route")
+            def some_route():
+                if paywall.check_payment():
+                    return "This is Paywalled content you paid for!"
 
         Returns:
-            A buffered writable file descriptor
+            Wether the request provided a Raiden payment that allows access to the resource
         """
         if self.amount == Decimal("0."):
             return True

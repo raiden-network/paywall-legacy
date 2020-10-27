@@ -21,24 +21,6 @@ from raiden_paywall.database import Base
 
 
 class PaymentState(enum.Enum):
-    """
-    A Payment's lifecycle:
-    1) AWAITED:
-        A payment will be created when the payment's identifier is created upon a request
-    2) PAID:
-        If a successful transfer is received before the timeout, the transfer is associated with
-        that identifier, and the identifier can be claimed in a request
-    3) CLAIMED:
-        If a identifier has been paid for, and the timeout is not exceeded,
-        a request with the X-Raiden-Payment-Id set to the identifier will unlock the paywall,
-        set the identifier to claimed and will invalidate the identifier for successive requests.
-        The identifier can be re-used again in it's AWAITED state.
-    4) TIMED_OUT:
-        If the timeout is reached before an identifier reaches it's CLAIMED state,
-        it will be set to the TIMED_OUT state and will be invalidated for requests.
-        The identifier can be re-used again in it's AWAITED state.
-    """
-
     AWAITED = 1
     PAID = 2
     TIMED_OUT = 3

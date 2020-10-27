@@ -78,6 +78,6 @@ as defined by the JSON-Schema syntax:
 
 
 .. literalinclude:: schema.json
-   :language: JSON
+   :language: python
 
 
