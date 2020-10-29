@@ -57,7 +57,7 @@ export default class PaywalledArticle extends Vue {
   private async loadArticle() {
     try {
       const articleResponse = await this.$http.get(
-				`${process.env.VUE_APP_CONTENT_BASE_URL}${this.$route.params.id}`
+				`${process.env.VUE_APP_CONTENT_BASE_URL}articles/${this.$route.params.id}`
       );
       this.content = articleResponse.data;
     } catch (error) {
